@@ -1,15 +1,10 @@
-import { Navbar } from '@/components/layout/Navbar'
-import { Footer } from '@/components/layout/Footer'
-
-
-const page = () => {
-
-   
-
+import { Hero } from "@/components/home/Hero";
+import { Ticker } from "@/components/home/Ticker";
+const page = () => {  
   return (
-    <div className='px-10'>
-      <Navbar></Navbar>
-      <Footer></Footer>
+    <div className=''>
+       <Hero />
+      <Ticker />
     </div>
   )
 }

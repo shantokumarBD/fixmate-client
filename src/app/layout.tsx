@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Bricolage_Grotesque, DM_Sans, JetBrains_Mono } from "next/font/google";
 import { Toaster } from "react-hot-toast";
 import "./globals.css";
+import { Navbar } from "@/components/layout/Navbar";
+import { Footer } from "@/components/layout/Footer";
 
 const bricolage = Bricolage_Grotesque({
   subsets: ["latin"],
@@ -42,6 +44,8 @@ export default function RootLayout({
     >
       <body className="min-h-screen bg-[#FEF9EF] text-[#151515] font-sans antialiased flex flex-col">
         {/* Global Toaster with Workshop Neobrutalist Theme */}
+       
+       <Navbar></Navbar>
         <Toaster
           position="top-right"
           toastOptions={{
@@ -59,6 +63,7 @@ export default function RootLayout({
           }}
         />
         {children}
+        <Footer></Footer>
       </body>
     </html>
   );
