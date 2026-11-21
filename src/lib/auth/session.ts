@@ -39,11 +39,10 @@ export const getToken = async () => {
   if (!session?.user?.email) {
     redirect("/sign-in");
   }
+  const secretKey =
+    process.env.JWT_SECRET
 
-  const secret = new TextEncoder().encode(
-    process.env.BETTER_AUTH_SECRET || "a-string-secret-at-least-256-bits-long"
-  );
-
+  const secret = new TextEncoder().encode(secretKey);
   return await new SignJWT({
     id: session.user.id,
     email: session.user.email,

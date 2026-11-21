@@ -1,10 +1,8 @@
+// File: next.config.ts
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
-  cacheComponents: true,
-  partialPrefetching: true,
-  reactCompiler: true,
+  // Tailwind v4 Turbopack CSS Loader (UI স্টাইলিং কার্যকর রাখার জন্য আবশ্যক)
   turbopack: {
     rules: {
       "*.css": {
@@ -13,20 +11,20 @@ const nextConfig: NextConfig = {
       },
     },
   },
-  
+
   images: {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "i.ibb.co", 
+        hostname: "i.ibb.co",
       },
       {
         protocol: "https",
-        hostname: "images.unsplash.com"
+        hostname: "images.unsplash.com",
       },
       {
         protocol: "https",
-        hostname: "lh3.googleusercontent.com", 
+        hostname: "lh3.googleusercontent.com",
       },
     ],
   },

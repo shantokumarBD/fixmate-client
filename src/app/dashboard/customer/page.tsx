@@ -14,6 +14,8 @@ import {
   ListFilter,
 } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+
 export const metadata = {
   title: "Customer Overview | FixMate",
 };

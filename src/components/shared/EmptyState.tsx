@@ -1,4 +1,5 @@
 import React from "react";
+import Link from "next/link";
 import { Wrench } from "lucide-react";
 
 interface EmptyStateProps {
@@ -47,21 +48,21 @@ export function EmptyState({
         {description}
       </p>
 
-      {/* Action CTA Button */}
+      {/* Action CTA Button with Next.js Link (No Full Page Refresh) */}
       {actionText && (
         <div>
           {actionHref ? (
-            <a
+            <Link
               href={actionHref}
-              className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#FF5B2E] text-white font-bold text-xs uppercase tracking-wider border-2 border-[#151515] shadow-hard-sm hover:translate-x-[1px] hover:translate-y-[1px] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#FF5B2E] text-white font-bold text-xs uppercase tracking-wider border-2 border-[#151515] shadow-hard-sm hover:translate-x-[1px] hover:translate-y-[1px] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all rounded-[6px]"
             >
               {actionText}
-            </a>
+            </Link>
           ) : (
             <button
               type="button"
               onClick={onAction}
-              className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#FF5B2E] text-white font-bold text-xs uppercase tracking-wider border-2 border-[#151515] shadow-hard-sm hover:translate-x-[1px] hover:translate-y-[1px] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all cursor-pointer"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#FF5B2E] text-white font-bold text-xs uppercase tracking-wider border-2 border-[#151515] shadow-hard-sm hover:translate-x-[1px] hover:translate-y-[1px] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all cursor-pointer rounded-[6px]"
             >
               {actionText}
             </button>

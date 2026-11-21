@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Sparkles } from "lucide-react";
+import { Sparkles, AlertCircle } from "lucide-react";
 import { ServiceDetail } from "@/types/service";
 import { useSession } from "@/lib/auth/auth-client";
 import { BookingModal } from "./BookingModal";
@@ -19,12 +19,10 @@ export function BookServiceButton({ service }: BookServiceButtonProps) {
   const [roleWarning, setRoleWarning] = useState("");
 
   const handleBookClick = () => {
-    // 0. Prevent premature redirect if session is still resolving
     if (isPending) return;
 
     setRoleWarning("");
 
-    // 1. Unauthenticated -> Redirect to sign in with returnUrl
     if (!session?.user) {
       router.push(`${ROUTES.SIGN_IN}?returnUrl=/services/${service._id}`);
       return;
@@ -32,13 +30,11 @@ export function BookServiceButton({ service }: BookServiceButtonProps) {
 
     const userRole = ((session.user as Record<string, unknown>).role as string || "customer").toLowerCase();
 
-    // 2. Role Restriction: Only customers can book repairs
     if (userRole === "technician" || userRole === "admin") {
       setRoleWarning("Technicians and Admins cannot book repairs. Please log in with a Customer account.");
       return;
     }
 
-    // 3. Open Booking Modal
     setIsModalOpen(true);
   };
 
@@ -53,9 +49,11 @@ export function BookServiceButton({ service }: BookServiceButtonProps) {
         <span>Book Repair Now</span>
       </button>
 
+      {/* Clean Error Alert with Lucide Icon (Zero Mojibake) */}
       {roleWarning && (
-        <div className="p-2.5 bg-[#FFDAD6] border-2 border-[#BA1A1A] rounded-[6px] text-[11px] font-mono text-[#BA1A1A] font-medium leading-tight">
-          ⚠️ {roleWarning}
+        <div className="p-2.5 bg-[#FFDAD6] border-2 border-[#BA1A1A] rounded-[6px] text-xs font-mono text-[#BA1A1A] font-semibold flex items-center gap-2 leading-tight">
+          <AlertCircle className="w-4 h-4 text-[#BA1A1A] shrink-0" />
+          <span>{roleWarning}</span>
         </div>
       )}
 
