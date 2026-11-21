@@ -1,3 +1,4 @@
+// File: src/components/shared/PaymentBadge.tsx
 import React from "react";
 import { PaymentStatus } from "@/constants/roles";
 import { CheckCircle2, AlertCircle } from "lucide-react";
@@ -17,19 +18,19 @@ export function PaymentBadge({
 
   return (
     <span
-      className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-[4px] text-xs font-black uppercase tracking-wider select-none ${
+      className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-[6px] text-xs font-mono font-bold tracking-wide border select-none cursor-default ${
         isPaid
-          ? "bg-[#10B981] text-white border-2 border-[#151515] shadow-[2px_2px_0px_#151515]"
-          : "bg-[#F5F0E6] text-[#FF5B2E] border-2 border-[#FF5B2E]"
+          ? "bg-[#ECFDF5] text-[#065F46] border-[#6EE7B7]"
+          : "bg-[#FFF1F2] text-[#9F1239] border-[#FECDD3]"
       } ${className}`}
     >
       {showIcon &&
         (isPaid ? (
-          <CheckCircle2 className="w-3.5 h-3.5" />
+          <CheckCircle2 className="w-3 h-3 text-[#10B981]" />
         ) : (
-          <AlertCircle className="w-3.5 h-3.5" />
+          <AlertCircle className="w-3 h-3 text-[#E11D48]" />
         ))}
-      <span>{isPaid ? "PAID" : "UNPAID"}</span>
+      <span>{isPaid ? "Paid" : "Unpaid"}</span>
     </span>
   );
 }

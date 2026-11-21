@@ -33,11 +33,14 @@ export async function createBookingAction(input: CreateBookingInput) {
       bookingId: data.bookingId,
       message: data.message || "Booking requested successfully!",
     };
-  } catch (error: unknown) {
+    } catch (error: unknown) {
     const err = error as Error;
+    const isNetworkError = err.message?.includes("fetch failed");
     return {
       success: false,
-      error: err.message || "Network error. Please try again later.",
+      error: isNetworkError
+        ? "Backend server is offline. Please ensure Express server is running on port 5000."
+        : err.message || "Network error. Please try again later.",
     };
   }
 }

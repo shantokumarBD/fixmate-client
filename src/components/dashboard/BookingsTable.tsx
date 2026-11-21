@@ -1,4 +1,3 @@
-// File: src/components/dashboard/BookingsTable.tsx
 "use client";
 
 import React, { useState, useTransition } from "react";
@@ -7,12 +6,22 @@ import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { Booking } from "@/types/booking";
 import { cancelBookingAction } from "@/actions/booking";
+import { createCheckoutSessionAction } from "@/actions/payment";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { PaymentBadge } from "@/components/shared/PaymentBadge";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { ROUTES } from "@/constants/routes";
-import { Search, Ban, Lock, ArrowRight, Inbox } from "lucide-react";
+import {
+  Search,
+  Ban,
+  Lock,
+  ArrowRight,
+  Inbox,
+  CreditCard,
+  Loader2,
+  CheckCircle2,
+} from "lucide-react";
 
 interface BookingsTableProps {
   bookings: Booking[];
@@ -26,8 +35,8 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [targetBooking, setTargetBooking] = useState<Booking | null>(null);
   const [isPending, startTransition] = useTransition();
+  const [payingId, setPayingId] = useState<string | null>(null);
 
-  // ১. সাধারণ ডাইনামিক ট্যাব ও কাউন্টার (No useMemo needed)
   const tabs = [
     { id: "all" as FilterTab, label: "All", count: bookings.length },
     {
@@ -57,7 +66,6 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
     },
   ];
 
-  // ২. প্লেইন ফিল্টারিং লজিক (Single Source of Truth)
   const filteredBookings = bookings.filter((b) => {
     if (activeTab !== "all" && b.status?.toLowerCase() !== activeTab) {
       return false;
@@ -74,7 +82,6 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
     return true;
   });
 
-  // ৩. ক্যানসেল হ্যান্ডলার: অ্যাকশন শেষে router.refresh() কল হলেই Next.js সার্ভার থেকে প্রপস আপডেট করে দেবে
   const handleConfirmCancel = () => {
     if (!targetBooking) return;
 
@@ -83,9 +90,22 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
       if (res.success) {
         toast.success(res.message || "Booking cancelled successfully");
         setTargetBooking(null);
-        router.refresh(); // সার্ভার থেকে নতুন bookings ফেচ হয়ে অটোমেটিক রেন্ডার হবে
+        router.refresh();
       } else {
         toast.error(res.error || "Failed to cancel booking");
+      }
+    });
+  };
+
+  // ৪. R19: Server Action Native Redirect (Zero window.location)
+  const handlePayNow = (bookingId: string) => {
+    startTransition(async () => {
+      setPayingId(bookingId);
+      const res = await createCheckoutSessionAction(bookingId);
+
+      if (res && !res.success) {
+        toast.error(res.error || "Failed to initiate Stripe payment");
+        setPayingId(null);
       }
     });
   };
@@ -143,7 +163,6 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
       {/* Table & Cards Container */}
       <div className="bg-white border-2 border-[#151515] shadow-[4px_4px_0px_#151515] rounded-[10px] overflow-hidden">
         {filteredBookings.length === 0 ? (
-          /* Empty State */
           <div className="p-10 text-center flex flex-col items-center justify-center bg-[#FEF9EF]/30">
             <div className="w-12 h-12 bg-[#FCD03D] border-2 border-[#151515] rounded-[8px] flex items-center justify-center shadow-[3px_3px_0px_#151515] mb-3">
               <Inbox className="w-6 h-6 text-[#151515]" />
@@ -196,6 +215,11 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
                   {filteredBookings.map((b) => {
                     const ticketCode = `#FX-${b._id?.slice(-4).toUpperCase()}`;
                     const isRequested = b.status?.toLowerCase() === "requested";
+                    const isCompletedUnpaid =
+                      b.status?.toLowerCase() === "completed" &&
+                      b.paymentStatus?.toLowerCase() === "unpaid";
+                    const isPaid = b.paymentStatus?.toLowerCase() === "paid";
+                    const isProcessingPayment = payingId === b._id;
 
                     return (
                       <tr key={b._id} className="hover:bg-[#FEF9EF]/50 transition-colors">
@@ -244,30 +268,54 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
                           {formatCurrency(b.finalAmount || b.basePrice || 0)}
                         </td>
 
-                        {/* Booking Status Badge */}
+                        {/* Status (Informational Pill, Not a button) */}
                         <td className="py-3.5 px-4 whitespace-nowrap">
                           <StatusBadge status={b.status} />
                         </td>
 
-                        {/* Payment Status Badge */}
+                        {/* Payment Status (Informational Pill, Not a button) */}
                         <td className="py-3.5 px-4 whitespace-nowrap">
                           <PaymentBadge status={b.paymentStatus} />
                         </td>
 
-                        {/* Action Column: R18 Enforcement */}
+                        {/* Action Column (The ONLY place where interactive buttons live) */}
                         <td className="py-3.5 px-4 whitespace-nowrap text-right">
-                          {isRequested ? (
+                          {isCompletedUnpaid ? (
+                            <button
+                              type="button"
+                              onClick={() => handlePayNow(b._id)}
+                              disabled={isProcessingPayment}
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#10B981] hover:bg-[#059669] text-white font-mono font-bold text-xs uppercase tracking-wider border-2 border-[#151515] shadow-[2px_2px_0px_#151515] rounded-[6px] hover:translate-x-0.5 hover:translate-y-0.5 active:translate-x-0 active:translate-y-0 active:shadow-none transition-all cursor-pointer disabled:opacity-50"
+                            >
+                              {isProcessingPayment ? (
+                                <>
+                                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                  <span>Routing...</span>
+                                </>
+                              ) : (
+                                <>
+                                  <CreditCard className="w-3.5 h-3.5" />
+                                  <span>Pay Now</span>
+                                </>
+                              )}
+                            </button>
+                          ) : isPaid ? (
+                            <span className="inline-flex items-center gap-1 font-mono text-xs font-bold text-[#16A34A] select-none">
+                              <CheckCircle2 className="w-3.5 h-3.5" />
+                              <span>Settled</span>
+                            </span>
+                          ) : isRequested ? (
                             <button
                               type="button"
                               onClick={() => setTargetBooking(b)}
-                              className="inline-flex items-center gap-1 px-3 py-1 bg-white hover:bg-[#FEE2E2] text-[#DC2626] font-mono font-bold text-xs uppercase tracking-wider border-2 border-[#DC2626] shadow-[2px_2px_0px_#DC2626] rounded-[4px] hover:translate-x-0.5 hover:translate-y-0.5 active:translate-x-0 active:translate-y-0 active:shadow-none transition-all cursor-pointer"
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-[#DC2626] text-[#DC2626] hover:text-white font-mono font-bold text-xs uppercase tracking-wider border-2 border-[#DC2626] shadow-[2px_2px_0px_#151515] rounded-[6px] hover:translate-x-0.5 hover:translate-y-0.5 active:translate-x-0 active:translate-y-0 active:shadow-none transition-all cursor-pointer"
                             >
                               <Ban className="w-3.5 h-3.5" />
-                              <span>Cancel</span>
+                              <span>Cancel Request</span>
                             </button>
                           ) : (
-                            <span className="inline-flex items-center gap-1 font-mono text-[11px] text-[#5B403A] bg-[#F2EDE3] border border-[#151515]/30 px-2 py-0.5 rounded-[4px]">
-                              <Lock className="w-3 h-3" />
+                            <span className="inline-flex items-center gap-1 font-mono text-[11px] text-[#5B403A] bg-[#F2EDE3] border border-[#151515]/30 px-2 py-1 rounded-[4px] select-none">
+                              <Lock className="w-3 h-3 text-[#5B403A]" />
                               <span>Locked in bay</span>
                             </span>
                           )}
@@ -284,6 +332,11 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
               {filteredBookings.map((b) => {
                 const ticketCode = `#FX-${b._id?.slice(-4).toUpperCase()}`;
                 const isRequested = b.status?.toLowerCase() === "requested";
+                const isCompletedUnpaid =
+                  b.status?.toLowerCase() === "completed" &&
+                  b.paymentStatus?.toLowerCase() === "unpaid";
+                const isPaid = b.paymentStatus?.toLowerCase() === "paid";
+                const isProcessingPayment = payingId === b._id;
 
                 return (
                   <div key={b._id} className="p-4 space-y-3">
@@ -307,7 +360,7 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
                         </span>
                       </div>
                       <div>
-                        <span className="text-[#5B403A] block text-[10px]">ESTIMATE:</span>
+                        <span className="text-[#5B403A] block text-[10px]">AMOUNT:</span>
                         <span className="font-bold text-[#151515]">
                           {formatCurrency(b.finalAmount || b.basePrice || 0)}
                         </span>
@@ -325,17 +378,41 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
                     </div>
 
                     <div className="flex items-center justify-end pt-1">
-                      {isRequested ? (
+                      {isCompletedUnpaid ? (
+                        <button
+                          type="button"
+                          onClick={() => handlePayNow(b._id)}
+                          disabled={isProcessingPayment}
+                          className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-[#10B981] hover:bg-[#059669] text-white font-mono font-bold text-xs uppercase tracking-wider border-2 border-[#151515] shadow-[2px_2px_0px_#151515] rounded-[6px] cursor-pointer"
+                        >
+                          {isProcessingPayment ? (
+                            <>
+                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                              <span>Routing...</span>
+                            </>
+                          ) : (
+                            <>
+                              <CreditCard className="w-3.5 h-3.5" />
+                              <span>Pay Now ({formatCurrency(b.finalAmount || b.basePrice)})</span>
+                            </>
+                          )}
+                        </button>
+                      ) : isPaid ? (
+                        <span className="font-mono text-xs font-bold text-[#16A34A] flex items-center gap-1 select-none">
+                          <CheckCircle2 className="w-3.5 h-3.5" />
+                          <span>Escrow Settled</span>
+                        </span>
+                      ) : isRequested ? (
                         <button
                           type="button"
                           onClick={() => setTargetBooking(b)}
-                          className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-white hover:bg-[#FEE2E2] text-[#DC2626] font-mono font-bold text-xs uppercase tracking-wider border-2 border-[#DC2626] shadow-[2px_2px_0px_#DC2626] rounded-[4px] cursor-pointer"
+                          className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-white hover:bg-[#DC2626] text-[#DC2626] hover:text-white font-mono font-bold text-xs uppercase tracking-wider border-2 border-[#DC2626] shadow-[2px_2px_0px_#151515] rounded-[6px] cursor-pointer transition-colors"
                         >
                           <Ban className="w-3.5 h-3.5" />
-                          <span>Cancel Order</span>
+                          <span>Cancel Request</span>
                         </button>
                       ) : (
-                        <span className="font-mono text-[11px] text-[#5B403A] flex items-center gap-1">
+                        <span className="font-mono text-xs text-[#5B403A] flex items-center gap-1 select-none">
                           <Lock className="w-3 h-3" />
                           <span>Order locked in bay</span>
                         </span>

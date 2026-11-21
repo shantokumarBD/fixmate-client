@@ -37,6 +37,7 @@ export const API_ENDPOINTS = {
   PAYMENTS: {
     POST_CHECKOUT: `${API_BASE_URL}/api/payments/create-checkout-session`,
     GET_VERIFY: `${API_BASE_URL}/api/payments/verify`,
+    GET_MY: `${API_BASE_URL}/api/payments/my`,
   },
 
   // Admin Protected

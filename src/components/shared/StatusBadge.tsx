@@ -1,3 +1,4 @@
+// File: src/components/shared/StatusBadge.tsx
 import React from "react";
 import { BookingStatus } from "@/constants/roles";
 import {
@@ -24,50 +25,58 @@ export function StatusBadge({
 
   const configs: Record<
     string,
-    { label: string; classes: string; icon: React.ReactNode }
+    { label: string; classes: string; dot: string; icon: React.ReactNode }
   > = {
     requested: {
-      label: "REQUESTED",
-      classes: "bg-[#2563EB] text-white border-2 border-[#151515]",
-      icon: <Clock className="w-3.5 h-3.5" />,
+      label: "Requested",
+      classes: "bg-[#EFF6FF] text-[#1D4ED8] border-[#93C5FD]",
+      dot: "bg-[#2563EB]",
+      icon: <Clock className="w-3 h-3" />,
     },
     accepted: {
-      label: "ACCEPTED",
-      classes: "bg-[#4F46E5] text-white border-2 border-[#151515]",
-      icon: <CheckCircle2 className="w-3.5 h-3.5" />,
+      label: "Accepted",
+      classes: "bg-[#EEF2FF] text-[#4338CA] border-[#A5B4FC]",
+      dot: "bg-[#4F46E5]",
+      icon: <CheckCircle2 className="w-3 h-3" />,
     },
     "in-progress": {
-      label: "IN PROGRESS",
-      classes: "bg-[#F59E0B] text-[#151515] border-2 border-[#151515]",
-      icon: <Wrench className="w-3.5 h-3.5" />,
+      label: "In Progress",
+      classes: "bg-[#FEF3C7] text-[#92400E] border-[#FCD34D]",
+      dot: "bg-[#F59E0B]",
+      icon: <Wrench className="w-3 h-3" />,
     },
     completed: {
-      label: "COMPLETED",
-      classes: "bg-[#10B981] text-white border-2 border-[#151515]",
-      icon: <CheckCheck className="w-3.5 h-3.5" />,
+      label: "Completed",
+      classes: "bg-[#ECFDF5] text-[#065F46] border-[#6EE7B7]",
+      dot: "bg-[#10B981]",
+      icon: <CheckCheck className="w-3 h-3" />,
     },
     cancelled: {
-      label: "CANCELLED",
-      classes: "bg-[#6B7280] text-white border-2 border-[#151515]",
-      icon: <Ban className="w-3.5 h-3.5" />,
+      label: "Cancelled",
+      classes: "bg-[#F3F4F6] text-[#4B5563] border-[#D1D5DB]",
+      dot: "bg-[#6B7280]",
+      icon: <Ban className="w-3 h-3" />,
     },
     rejected: {
-      label: "REJECTED",
-      classes: "bg-[#EF4444] text-white border-2 border-[#151515]",
-      icon: <XCircle className="w-3.5 h-3.5" />,
+      label: "Rejected",
+      classes: "bg-[#FEF2F2] text-[#991B1B] border-[#FCA5A5]",
+      dot: "bg-[#EF4444]",
+      icon: <XCircle className="w-3 h-3" />,
     },
   };
 
   const current = configs[normalized] || {
-    label: status.toUpperCase(),
-    classes: "bg-gray-200 text-gray-800 border-2 border-[#151515]",
-    icon: <Clock className="w-3.5 h-3.5" />,
+    label: status,
+    classes: "bg-[#F3F4F6] text-[#374151] border-[#E5E7EB]",
+    dot: "bg-gray-400",
+    icon: <Clock className="w-3 h-3" />,
   };
 
   return (
     <span
-      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[4px] text-xs font-black uppercase tracking-wider select-none shadow-[2px_2px_0px_#151515] ${current.classes} ${className}`}
+      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[6px] text-xs font-mono font-bold tracking-wide border select-none cursor-default ${current.classes} ${className}`}
     >
+      <span className={`w-1.5 h-1.5 rounded-full ${current.dot}`} />
       {showIcon && current.icon}
       <span>{current.label}</span>
     </span>
