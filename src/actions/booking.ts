@@ -33,7 +33,7 @@ export async function createBookingAction(input: CreateBookingInput) {
       bookingId: data.bookingId,
       message: data.message || "Booking requested successfully!",
     };
-    } catch (error: unknown) {
+  } catch (error: unknown) {
     const err = error as Error;
     const isNetworkError = err.message?.includes("fetch failed");
     return {
@@ -70,6 +70,54 @@ export async function cancelBookingAction(bookingId: string) {
     return {
       success: true,
       message: data.message || "Booking cancelled successfully",
+    };
+  } catch (error: unknown) {
+    const err = error as Error;
+    return {
+      success: false,
+      error: err.message || "Network error. Please try again later.",
+    };
+  }
+}
+
+/**
+ * Server Action: Technician updates booking status (Challenge 3 State Machine Pipeline)
+ * Status transitions: requested -> accepted/rejected -> in-progress -> completed
+ */
+export async function updateBookingStatusAction(
+  bookingId: string,
+  status: string,
+  finalAmount?: number
+) {
+  try {
+    const payload: { status: string; finalAmount?: number } = { status };
+    if (finalAmount !== undefined) {
+      payload.finalAmount = finalAmount;
+    }
+
+    const res = await authFetch(API_ENDPOINTS.BOOKINGS.PATCH_STATUS(bookingId), {
+      method: "PATCH",
+      body: JSON.stringify(payload),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      return {
+        success: false,
+        error: data.message || `Failed to update status to ${status}`,
+      };
+    }
+
+    // Revalidate all technician and customer dashboards
+    revalidatePath("/dashboard/technician/requests");
+    revalidatePath("/dashboard/technician");
+    revalidatePath("/dashboard/customer/bookings");
+    revalidatePath("/dashboard/customer");
+
+    return {
+      success: true,
+      message: data.message || `Booking status updated to ${status}`,
     };
   } catch (error: unknown) {
     const err = error as Error;
