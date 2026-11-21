@@ -3,6 +3,10 @@
  * HTTP Action Verbs (GET, POST, PATCH, DELETE) for maximum clarity.
  */
 
+// ImgBB Upload Endpoint
+export const IMGBB_UPLOAD_URL = "https://api.imgbb.com/1/upload";
+
+
 export const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
