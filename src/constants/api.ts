@@ -14,9 +14,11 @@ export const API_BASE_URL =
 
 export const API_ENDPOINTS = {
   // Services
+  // Services
   SERVICES: {
     GET_ALL: `${API_BASE_URL}/api/services`,
     GET_BY_ID: (id: string) => `${API_BASE_URL}/api/services/${id}`,
+    GET_MY: `${API_BASE_URL}/api/services/my`,
     POST: `${API_BASE_URL}/api/services`,
     PATCH: (id: string) => `${API_BASE_URL}/api/services/${id}`,
     DELETE: (id: string) => `${API_BASE_URL}/api/services/${id}`,

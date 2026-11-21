@@ -1,5 +1,6 @@
 import { API_ENDPOINTS } from "@/constants/api";
 import { Service, ServiceDetail } from "@/types/service";
+import { authFetch } from "@/lib/auth/session";
 
 /**
  * Server fetcher: Top 6 featured services for homepage
@@ -75,7 +76,7 @@ export async function fetchFilteredServices(filters: {
 }
 
 /**
- * Server fetcher: Single service details with technician profile summary (R07)
+ * Server fetcher: Single service details with technician profile summary 
  */
 export async function getServiceById(id: string): Promise<ServiceDetail | null> {
   try {
@@ -92,5 +93,22 @@ export async function getServiceById(id: string): Promise<ServiceDetail | null> 
   } catch (error) {
     console.error("Failed to fetch service details:", error);
     return null;
+  }
+}
+
+/**
+ * Server fetcher: Get all services authored by the logged-in technician 
+ */
+
+export async function getMyTechnicianServices(): Promise<Service[]> {
+  try {
+    const res = await authFetch(API_ENDPOINTS.SERVICES.GET_MY, {
+      cache: "no-store", // Dashboard real-time live data
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return Array.isArray(data) ? data : [];
+  } catch {
+    return [];
   }
 }
