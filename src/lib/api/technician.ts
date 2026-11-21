@@ -19,3 +19,12 @@ export async function getMyTechnicianServices(): Promise<Service[]> {
     return [];
   }
 }
+
+
+/**
+ * Server fetcher: Get a single service owned by the logged-in technician
+ */
+export async function getTechnicianServiceById(serviceId: string): Promise<Service | null> {
+  const myServices = await getMyTechnicianServices();
+  return myServices.find((s) => s._id === serviceId) || null;
+}

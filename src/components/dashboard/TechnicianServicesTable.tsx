@@ -9,12 +9,12 @@ import { Service } from "@/types/service";
 import { toggleAvailabilityAction, deleteServiceAction } from "@/actions/service";
 import { ApprovalBadge } from "@/components/shared/ApprovalBadge";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
-import { formatCurrency, formatDate } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils";
 import { ROUTES } from "@/constants/routes";
 import {
   Search,
-  Wrench,
   Trash2,
+  Pencil,
   PlusCircle,
   Inbox,
   Power,
@@ -35,7 +35,6 @@ export function TechnicianServicesTable({ services }: TechnicianServicesTablePro
   const [isDeleting, startDeleteTransition] = useTransition();
   const [togglingId, setTogglingId] = useState<string | null>(null);
 
-  // ১. ট্যাব কাউন্টার
   const tabs = [
     { id: "all" as TabType, label: "All Services", count: services.length },
     {
@@ -55,7 +54,7 @@ export function TechnicianServicesTable({ services }: TechnicianServicesTablePro
     },
   ];
 
-  // ২. ফিল্টারিং লজিক
+
   const filteredServices = services.filter((s) => {
     if (activeTab !== "all" && s.approvalStatus !== activeTab) {
       return false;
@@ -71,7 +70,6 @@ export function TechnicianServicesTable({ services }: TechnicianServicesTablePro
     return true;
   });
 
-  // ৩. Challenge 1: Availability Switch Toggle
   const handleToggleAvailability = async (service: Service) => {
     try {
       setTogglingId(service._id);
@@ -93,7 +91,6 @@ export function TechnicianServicesTable({ services }: TechnicianServicesTablePro
     }
   };
 
-  // ৪. Delete Service Confirmation Action
   const handleConfirmDelete = () => {
     if (!targetDeleteService) return;
 
@@ -244,7 +241,7 @@ export function TechnicianServicesTable({ services }: TechnicianServicesTablePro
                         {formatCurrency(s.basePrice || 0)}
                       </td>
 
-                      {/* Approval Status */}
+                      {/* Approval Status Badge */}
                       <td className="py-3.5 px-4 whitespace-nowrap">
                         <ApprovalBadge status={s.approvalStatus} />
                       </td>
@@ -270,16 +267,28 @@ export function TechnicianServicesTable({ services }: TechnicianServicesTablePro
                         </button>
                       </td>
 
-                      {/* Action: Delete */}
+                      {/* Actions: Edit & Delete */}
                       <td className="py-3.5 px-4 whitespace-nowrap text-right">
-                        <button
-                          type="button"
-                          onClick={() => setTargetDeleteService(s)}
-                          className="p-1.5 bg-white hover:bg-[#FEE2E2] text-[#DC2626] border-2 border-[#DC2626] rounded-[6px] shadow-[2px_2px_0px_#DC2626] hover:translate-x-0.5 hover:translate-y-0.5 active:translate-x-0 active:translate-y-0 active:shadow-none transition-all cursor-pointer inline-flex items-center justify-center"
-                          title="Delete Service"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                        <div className="flex items-center justify-end gap-2">
+                          {/* Edit Button */}
+                          <Link
+                            href={ROUTES.TECHNICIAN.EDIT_SERVICE(s._id)}
+                            className="p-1.5 bg-white hover:bg-[#FCD03D] text-[#151515] border-2 border-[#151515] rounded-[6px] shadow-[2px_2px_0px_#151515] hover:translate-x-0.5 hover:translate-y-0.5 active:translate-x-0 active:translate-y-0 active:shadow-none transition-all cursor-pointer inline-flex items-center justify-center"
+                            title="Edit Service"
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </Link>
+
+                          {/* Delete Button */}
+                          <button
+                            type="button"
+                            onClick={() => setTargetDeleteService(s)}
+                            className="p-1.5 bg-white hover:bg-[#FEE2E2] text-[#DC2626] border-2 border-[#151515] rounded-[6px] shadow-[2px_2px_0px_#151515] hover:translate-x-0.5 hover:translate-y-0.5 active:translate-x-0 active:translate-y-0 active:shadow-none transition-all cursor-pointer inline-flex items-center justify-center"
+                            title="Delete Service"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );

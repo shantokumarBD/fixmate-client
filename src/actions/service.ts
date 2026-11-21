@@ -88,6 +88,40 @@ export async function toggleAvailabilityAction(serviceId: string, isAvailable: b
 }
 
 /**
+ * Server Action: Update existing service (R11: Edits require re-approval)
+ */
+export async function updateServiceAction(
+  serviceId: string,
+  input: CreateServiceInput
+) {
+  try {
+    const res = await authFetch(API_ENDPOINTS.SERVICES.PATCH(serviceId), {
+      method: "PATCH",
+      body: JSON.stringify(input),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      return {
+        success: false,
+        error: data.message || "Failed to update service",
+      };
+    }
+    revalidatePath("/dashboard/technician/my-services");
+    revalidatePath("/services");
+    return {
+      success: true,
+      message: "Service updated! Resubmitted for admin moderation.",
+    };
+  } catch (error: unknown) {
+    const err = error as Error;
+    return {
+      success: false,
+      error: err.message || "Network error. Please try again later.",
+    };
+  }
+}
+
+/**
  * Server Action: Delete technician's own service
  */
 export async function deleteServiceAction(serviceId: string) {

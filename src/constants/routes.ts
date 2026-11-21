@@ -27,6 +27,7 @@ export const ROUTES = {
     OVERVIEW: "/dashboard/technician",
     ADD_SERVICE: "/dashboard/technician/add-service",
     MY_SERVICES: "/dashboard/technician/my-services",
+    EDIT_SERVICE: (id: string) => `/dashboard/technician/my-services/${id}/edit`,
     REQUESTS: "/dashboard/technician/requests",
   },
 

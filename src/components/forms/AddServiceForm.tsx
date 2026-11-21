@@ -1,4 +1,3 @@
-// File: src/components/forms/AddServiceForm.tsx
 "use client";
 
 import React, { useState, useTransition } from "react";
@@ -16,7 +15,6 @@ import {
   FileText,
   Tag,
   Loader2,
-  CheckCircle2,
   Sparkles,
 } from "lucide-react";
 
@@ -77,11 +75,11 @@ export function AddServiceForm() {
   return (
     <form
       onSubmit={handleSubmit}
-      className="bg-white border-2 border-[#151515] shadow-[6px_6px_0px_#151515] rounded-[12px] p-6 sm:p-8 space-y-6"
+      className="bg-white border-2 border-[#151515] shadow-[4px_4px_0px_#151515] rounded-[10px] p-5 sm:p-7 space-y-5"
     >
       {/* 1. Service Title */}
       <div>
-        <label className="block font-mono text-xs font-bold uppercase tracking-wider text-[#151515] mb-2">
+        <label className="block font-mono text-xs font-bold uppercase tracking-wider text-[#151515] mb-1.5">
           Service Title *
         </label>
         <div className="relative">
@@ -99,7 +97,7 @@ export function AddServiceForm() {
       {/* 2. Category & Service Mode */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label className="block font-mono text-xs font-bold uppercase tracking-wider text-[#151515] mb-2">
+          <label className="block font-mono text-xs font-bold uppercase tracking-wider text-[#151515] mb-1.5">
             Appliance Category *
           </label>
           <div className="relative">
@@ -119,7 +117,7 @@ export function AddServiceForm() {
         </div>
 
         <div>
-          <label className="block font-mono text-xs font-bold uppercase tracking-wider text-[#151515] mb-2">
+          <label className="block font-mono text-xs font-bold uppercase tracking-wider text-[#151515] mb-1.5">
             Dispatch Mode *
           </label>
           <div className="grid grid-cols-2 gap-2">
@@ -144,7 +142,7 @@ export function AddServiceForm() {
       {/* 3. Base Price & Estimated Duration */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label className="block font-mono text-xs font-bold uppercase tracking-wider text-[#151515] mb-2">
+          <label className="block font-mono text-xs font-bold uppercase tracking-wider text-[#151515] mb-1.5">
             Base Inspection Quote ($ USD) *
           </label>
           <div className="relative">
@@ -165,7 +163,7 @@ export function AddServiceForm() {
         </div>
 
         <div>
-          <label className="block font-mono text-xs font-bold uppercase tracking-wider text-[#151515] mb-2">
+          <label className="block font-mono text-xs font-bold uppercase tracking-wider text-[#151515] mb-1.5">
             Estimated Duration *
           </label>
           <div className="relative">
@@ -184,7 +182,7 @@ export function AddServiceForm() {
       {/* 4. Service Area & Photo Upload */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start">
         <div>
-          <label className="block font-mono text-xs font-bold uppercase tracking-wider text-[#151515] mb-2">
+          <label className="block font-mono text-xs font-bold uppercase tracking-wider text-[#151515] mb-1.5">
             Service Coverage Area *
           </label>
           <div className="relative">
@@ -200,7 +198,7 @@ export function AddServiceForm() {
         </div>
 
         <div>
-          <label className="block font-mono text-xs font-bold uppercase tracking-wider text-[#151515] mb-2">
+          <label className="block font-mono text-xs font-bold uppercase tracking-wider text-[#151515] mb-1.5">
             Service Thumbnail Image (ImgBB)
           </label>
           <ImageUploader
@@ -213,14 +211,14 @@ export function AddServiceForm() {
 
       {/* 5. Service Description */}
       <div>
-        <label className="block font-mono text-xs font-bold uppercase tracking-wider text-[#151515] mb-2">
+        <label className="block font-mono text-xs font-bold uppercase tracking-wider text-[#151515] mb-1.5">
           Technical Problem Scope & Diagnosis Description *
         </label>
         <div className="relative">
           <FileText className="w-4 h-4 text-[#5B403A] absolute left-3.5 top-3" />
           <textarea
             name="description"
-            rows={4}
+            rows={3}
             required
             placeholder="Explain what repair operations are covered, equipment used, and customer guarantees..."
             className="w-full pl-10 pr-4 py-2.5 bg-white border-2 border-[#151515] rounded-[6px] shadow-[2px_2px_0px_#151515] font-sans text-sm text-[#151515] placeholder:text-[#5B403A]/60 focus:outline-none focus:ring-2 focus:ring-[#FF5B2E]"
@@ -233,7 +231,7 @@ export function AddServiceForm() {
         <button
           type="submit"
           disabled={isPending}
-          className="w-full py-3.5 px-6 bg-[#FF5B2E] text-white border-2 border-[#151515] shadow-[4px_4px_0px_#000000] font-heading font-black text-sm uppercase tracking-wider hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0 active:translate-y-0 active:shadow-none transition-all rounded-[8px] cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
+          className="w-full py-3 px-6 bg-[#FF5B2E] text-white border-2 border-[#151515] shadow-[3px_3px_0px_#000000] font-heading font-black text-sm uppercase tracking-wider hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0 active:translate-y-0 active:shadow-none transition-all rounded-[8px] cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
         >
           {isPending ? (
             <>
