@@ -1,7 +1,8 @@
 import { UserRole } from "@/constants/roles";
 
 export interface User {
-  id: string;
+  _id?: string;
+  id?: string;
   name: string;
   email: string;
   image?: string;
@@ -10,4 +11,5 @@ export interface User {
   area?: string;
   bio?: string;
   createdAt?: string;
+  updatedAt?: string;
 }
