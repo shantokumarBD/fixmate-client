@@ -39,3 +39,37 @@ export async function getCategoryCounts(): Promise<Record<string, number>> {
     return {};
   }
 }
+
+/**
+ * Server fetcher: Multi-criteria filtered services for Browse Services page 
+ */
+export async function fetchFilteredServices(filters: {
+  search?: string;
+  category?: string;
+  serviceMode?: string;
+  sort?: string;
+}): Promise<Service[]> {
+  try {
+    const params = new URLSearchParams();
+    if (filters.search) params.set("search", filters.search);
+    if (filters.category) params.set("category", filters.category);
+    if (filters.serviceMode) params.set("serviceMode", filters.serviceMode);
+    if (filters.sort) params.set("sort", filters.sort);
+
+    const queryString = params.toString();
+    const url = queryString
+      ? `${API_ENDPOINTS.SERVICES.GET_ALL}?${queryString}`
+      : API_ENDPOINTS.SERVICES.GET_ALL;
+
+    const res = await fetch(url, {
+      next: { revalidate: 30 },
+    });
+
+    if (!res.ok) return [];
+    const data = await res.json();
+    return Array.isArray(data) ? data : [];
+  } catch (error) {
+    console.error("Failed to fetch filtered services:", error);
+    return [];
+  }
+}
