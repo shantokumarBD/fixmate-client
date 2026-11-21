@@ -1,0 +1,86 @@
+import React from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { ArrowRight } from "lucide-react";
+import { Service } from "@/types/service";
+
+interface ServiceCardProps {
+  service: Service;
+}
+
+export function ServiceCard({ service }: ServiceCardProps) {
+  // Generate authentic Job Ticket code from MongoDB _id (e.g. #FX-014)
+  const ticketCode = service._id ? `#FX-${service._id.slice(-4).toUpperCase()}` : "#FX-900";
+
+  return (
+    <article className="bg-white border-2 border-[#151515] shadow-[4px_4px_0px_#151515] rounded-[10px] overflow-hidden flex flex-col justify-between hover:-translate-y-1 transition-transform group">
+      <div>
+        {/* Ticket Header Manifest Strip */}
+        <div className="bg-[#F5F0E6] border-b-2 border-[#151515] px-4 py-2.5 flex items-center justify-between font-mono text-xs">
+          <span className="font-extrabold text-[#151515]">{ticketCode}</span>
+          <div className="flex items-center gap-1.5">
+            <span className="bg-white border-2 border-[#151515] px-2 py-0.5 rounded-[4px] font-bold text-[10px] uppercase text-[#151515]">
+              {service.category}
+            </span>
+            <span className="bg-[#FCD03D] border-2 border-[#151515] px-2 py-0.5 rounded-[4px] font-bold text-[10px] uppercase text-[#151515]">
+              {service.serviceMode}
+            </span>
+          </div>
+        </div>
+
+        {/* Service Image */}
+        <div className="h-44 bg-[#DEDAD0] border-b-2 border-[#151515] relative overflow-hidden">
+          <Image
+            src={service.image || "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80"}
+            alt={service.title}
+            fill
+            sizes="(max-width: 768px) 100vw, 380px"
+            className="object-cover group-hover:scale-105 transition-transform duration-300"
+          />
+        </div>
+
+        {/* Title, Technician & Estimated Duration */}
+        <div className="p-5">
+          <h3 className="font-heading font-bold text-lg text-[#151515] leading-snug line-clamp-1 group-hover:text-[#FF5B2E] transition-colors">
+            {service.title}
+          </h3>
+          <p className="font-sans text-xs text-[#151515]/75 mt-1.5 font-medium">
+            Technician: <span className="font-semibold text-[#151515]">{service.technicianName || "Certified Master"}</span>
+          </p>
+          <div className="mt-2.5 font-mono text-[11px] text-[#151515]/70 flex items-center gap-1">
+            <span>⏱️ Est. Duration:</span>
+            <span className="font-bold text-[#151515]">{service.estimatedDuration || "1 - 2 Hours"}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom Perforated Ticket Section */}
+      <div>
+        {/* Ticket Perforated Tear Notch Line */}
+        <div className="border-b-2 border-dashed border-[#151515] my-1 relative">
+          <span className="absolute -left-3 -top-2 w-4 h-4 bg-[#F5F0E6] border-r-2 border-[#151515] rounded-r-full" />
+          <span className="absolute -right-3 -top-2 w-4 h-4 bg-[#F5F0E6] border-l-2 border-[#151515] rounded-l-full" />
+        </div>
+
+        <div className="p-5 pt-3 flex items-center justify-between bg-white">
+          <div>
+            <span className="font-mono text-[10px] block text-[#151515]/70 uppercase font-semibold">
+              Starting Price
+            </span>
+            <span className="font-mono text-2xl font-black text-[#151515]">
+              From ${service.basePrice}
+            </span>
+          </div>
+
+          <Link
+            href={`/services/${service._id}`}
+            className="inline-flex items-center gap-1.5 bg-[#FF5B2E] text-[#151515] border-2 border-[#151515] shadow-[3px_3px_0px_#151515] hover:shadow-[1px_1px_0px_#151515] hover:translate-x-0.5 hover:translate-y-0.5 active:translate-x-1 active:translate-y-1 active:shadow-none font-heading text-xs font-bold px-4 py-2.5 rounded-[8px] transition-all whitespace-nowrap cursor-pointer"
+          >
+            <span>View Details</span>
+            <ArrowRight className="w-3.5 h-3.5 text-[#151515]" />
+          </Link>
+        </div>
+      </div>
+    </article>
+  );
+}
