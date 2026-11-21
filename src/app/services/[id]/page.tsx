@@ -11,10 +11,10 @@ import {
   ChevronRight,
   ArrowLeft,
   Wrench,
-  Sparkles,
   Award,
 } from "lucide-react";
 import { getServiceById } from "@/lib/api/services";
+import { BookServiceButton } from "@/components/services/BookServiceButton";
 import { ROUTES } from "@/constants/routes";
 
 interface ServiceDetailsPageProps {
@@ -160,10 +160,10 @@ export default async function ServiceDetailsPage({ params }: ServiceDetailsPageP
 
           </div>
 
-          {/* RIGHT COLUMN: Pricing, Technician Card & CTA (4 Cols Sticky) */}
+          {/* RIGHT COLUMN: Pricing, Technician Card & Interactive Booking (4 Cols Sticky) */}
           <div className="lg:col-span-4 space-y-6 lg:sticky lg:top-24 self-start">
             
-            {/* 1. Flat Pricing & Booking CTA Box */}
+            {/* 1. Flat Pricing & Interactive Booking CTA Box */}
             <div className="bg-white border-2 border-[#151515] rounded-[10px] shadow-[4px_4px_0px_#151515] p-5 space-y-4">
               <div className="flex items-baseline justify-between">
                 <div>
@@ -189,14 +189,8 @@ export default async function ServiceDetailsPage({ params }: ServiceDetailsPageP
                 ✨ No hidden surcharges. Includes diagnostic scan and labor.
               </div>
 
-              {/* Book Repair CTA Button */}
-              <Link
-                href={`/services/${service._id}/book`}
-                className="w-full py-3 px-4 bg-[#FF5B2E] text-[#151515] border-2 border-[#151515] rounded-[8px] font-heading font-extrabold text-sm uppercase tracking-wide shadow-[3px_3px_0px_#151515] hover:shadow-[1px_1px_0px_#151515] hover:translate-x-0.5 hover:translate-y-0.5 active:translate-x-1 active:translate-y-1 active:shadow-none flex items-center justify-center gap-2 transition-all cursor-pointer text-center"
-              >
-                <Sparkles className="w-4 h-4 text-[#151515]" />
-                <span>Book Repair Now</span>
-              </Link>
+              {/* Client Interactive Booking Button (Opens Modal or Redirects to Sign In) */}
+              <BookServiceButton service={service} />
             </div>
 
             {/* 2. Technician Profile Summary Card (Requirement R07) */}
@@ -209,7 +203,6 @@ export default async function ServiceDetailsPage({ params }: ServiceDetailsPageP
               </div>
 
               <div className="flex items-center gap-3.5">
-                {/* Technician Avatar / Fallback */}
                 <div className="w-14 h-14 rounded-[8px] bg-[#FCD03D] border-2 border-[#151515] shadow-[2px_2px_0px_#151515] relative overflow-hidden shrink-0 flex items-center justify-center">
                   {service.technician?.image ? (
                     <Image
@@ -235,12 +228,10 @@ export default async function ServiceDetailsPage({ params }: ServiceDetailsPageP
                 </div>
               </div>
 
-              {/* Bio */}
               <p className="font-sans text-xs text-[#151515]/75 leading-relaxed bg-[#F5F0E6] p-2.5 rounded-[6px] border border-[#151515]/30">
                 &quot;{technicianBio}&quot;
               </p>
 
-              {/* Coverage Area & Contact */}
               <div className="space-y-2 pt-1 font-mono text-xs">
                 <div className="flex items-start gap-2 text-[#151515]/80">
                   <MapPin className="w-3.5 h-3.5 text-[#151515] shrink-0 mt-0.5" />

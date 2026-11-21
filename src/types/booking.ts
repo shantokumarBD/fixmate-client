@@ -14,6 +14,7 @@ export interface Booking {
   customerPhone: string;
   address: string;
   preferredDate: string;
+  timeSlot?: string;
   problemDescription: string;
   status: BookingStatus;
   finalAmount: number;
@@ -26,5 +27,6 @@ export interface CreateBookingInput {
   customerPhone: string;
   address: string;
   preferredDate: string;
+  timeSlot?: string;
   problemDescription: string;
 }
