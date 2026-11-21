@@ -2,6 +2,7 @@ import { API_ENDPOINTS } from "@/constants/api";
 import { authFetch } from "@/lib/auth/session";
 import { Booking } from "@/types/booking";
 import { User } from "@/types/user";
+import { Service } from "@/types/service";
 
 export interface AdminStats {
   totalUsers: number;
@@ -70,6 +71,24 @@ export async function getAllBookingsForAdmin(): Promise<Booking[]> {
 export async function getAllUsers(): Promise<User[]> {
   try {
     const res = await authFetch(API_ENDPOINTS.ADMIN.GET_USERS, {
+      cache: "no-store",
+    });
+
+    if (!res.ok) return [];
+
+    const data = await res.json();
+    return Array.isArray(data) ? data : [];
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Fetch all services across all technicians for Admin Moderation (R23)
+ */
+export async function getAllServicesForAdmin(): Promise<Service[]> {
+  try {
+    const res = await authFetch(API_ENDPOINTS.ADMIN.GET_SERVICES, {
       cache: "no-store",
     });
 

@@ -38,3 +38,44 @@ export async function updateUserRoleAction(userId: string, role: string) {
     };
   }
 }
+
+/**
+ * Server Action: Admin approves or rejects a service (R23)
+ */
+export async function updateServiceApprovalAction(
+  serviceId: string,
+  approvalStatus: "approved" | "rejected"
+) {
+  try {
+    const res = await authFetch(API_ENDPOINTS.ADMIN.PATCH_APPROVAL(serviceId), {
+      method: "PATCH",
+      body: JSON.stringify({ approvalStatus }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      return {
+        success: false,
+        error: data.message || `Failed to mark service ${approvalStatus}`,
+      };
+    }
+
+    // Revalidate public catalog and admin tables
+    revalidatePath("/dashboard/admin/services");
+    revalidatePath("/dashboard/admin");
+    revalidatePath("/services");
+    revalidatePath("/dashboard/technician/my-services");
+
+    return {
+      success: true,
+      message: data.message || `Service marked as ${approvalStatus} successfully`,
+    };
+  } catch (error: unknown) {
+    const err = error as Error;
+    return {
+      success: false,
+      error: err.message || "Network error. Please try again later.",
+    };
+  }
+}

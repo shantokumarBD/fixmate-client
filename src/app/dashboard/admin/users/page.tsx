@@ -12,11 +12,11 @@ export const metadata = {
 };
 
 export default async function AdminUsersPage() {
-  // ১. অ্যাডমিন রোল সিকিউরিটি গার্ড
+  
   await requireRole("admin");
   const session = await getSession();
 
-  // ২. ব্যবহারকারীদের তালিকা লোড
+  
   const users = await getAllUsers();
 
   return (
