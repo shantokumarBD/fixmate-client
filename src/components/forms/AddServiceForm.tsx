@@ -235,6 +235,7 @@ export function AddServiceForm() {
         >
           {isPending ? (
             <>
+            
               <Loader2 className="w-4 h-4 animate-spin" />
               <span>Publishing to Moderation Queue...</span>
             </>
