@@ -2,6 +2,8 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import { ShieldCheck, Wrench, Shield } from "lucide-react";
 import { SignInForm } from "@/components/forms/SignInForm";
+import { getSession } from "@/lib/auth/session";
+import { redirect } from "next/navigation";
 
 export const metadata: Metadata = {
   title: "Sign In",
@@ -9,7 +11,11 @@ export const metadata: Metadata = {
     "Log in to your FixMate customer or technician workbench account.",
 };
 
-export default function SignInPage() {
+export default async function SignInPage() {
+    const session = await getSession();
+  if (session?.user) {
+    redirect("/");
+  }
   return (
     <div className="w-full max-w-4xl my-auto">
       {/* 2-Column Neobrutalist Container */}

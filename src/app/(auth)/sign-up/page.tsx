@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { ShieldCheck, Wrench, Shield } from "lucide-react";
 import { SignUpForm } from "@/components/forms/SignUpForm";
+import { getSession } from "@/lib/auth/session";
+import { redirect } from "next/navigation";
 
 export const metadata: Metadata = {
   title: "Sign Up",
@@ -8,7 +10,13 @@ export const metadata: Metadata = {
     "Join FixMate as a Customer or Technician. Verified workbench repairs and guaranteed escrow protection.",
 };
 
-export default function SignUpPage() {
+export default async function SignUpPage() {
+
+    const session = await getSession();
+  if (session?.user) {
+    redirect("/");
+  }
+
   return (
     <div className="w-full max-w-4xl my-auto">
       {/* 2-Column Neobrutalist Container */}
