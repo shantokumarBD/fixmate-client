@@ -1,15 +1,13 @@
 import React from "react";
 import Link from "next/link";
 import { ArrowRight, Wrench } from "lucide-react";
-import { Service } from "@/types/service";
 import { ServiceCard } from "@/components/shared/ServiceCard";
+import { getFeaturedServices } from "@/lib/api/services";
 import { ROUTES } from "@/constants/routes";
 
-interface FeaturedServicesProps {
-  services: Service[];
-}
+export async function FeaturedServices() {
+  const services = await getFeaturedServices(6);
 
-export function FeaturedServices({ services }: FeaturedServicesProps) {
   return (
     <section className="w-full bg-[#F5F0E6] py-16 lg:py-24 border-b-2 border-[#151515]">
       <div className="max-w-[1200px] mx-auto px-4 sm:px-8">

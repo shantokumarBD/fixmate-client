@@ -1,17 +1,19 @@
 import { Hero } from "@/components/home/Hero";
 import { Ticker } from "@/components/home/Ticker";
 import { FeaturedServices } from "@/components/home/FeaturedServices";
-import { getFeaturedServices } from "@/lib/api/services";
+import { PopularCategories } from "@/components/home/PopularCategories";
+import { WhyChooseUs } from "@/components/home/WhyChooseUs";
+import { HowItWorks } from "@/components/home/HowItWorks";
 
-
-export default async function HomePage() {
-  const featuredServices = await getFeaturedServices(6);
-
+export default function HomePage() {
   return (
     <main className="w-full min-h-screen">
       <Hero />
       <Ticker />
-      <FeaturedServices services={featuredServices} />
+      <FeaturedServices />
+      <HowItWorks />
+      <PopularCategories />
+      <WhyChooseUs />
     </main>
   );
 }
