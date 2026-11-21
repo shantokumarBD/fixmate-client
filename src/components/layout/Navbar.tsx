@@ -2,6 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Logo } from "@/components/layout/Logo";
 import { MobileNav } from "@/components/layout/MobileNav";
 import { UserDropdown } from "@/components/layout/UserDropdown";
@@ -15,9 +16,13 @@ const NAV_LINKS = [
 ];
 
 export function Navbar() {
-
+  const pathname = usePathname();
   const { data: session, isPending } = useSession();
   const user = session?.user;
+
+  if (pathname?.startsWith("/dashboard")) {
+    return null;
+  }
 
   return (
     <header className="sticky top-0 left-0 right-0 w-full z-40 bg-[#FEF9EF] border-b-2 border-[#151515]">
@@ -36,10 +41,9 @@ export function Navbar() {
           ))}
         </nav>
 
-        {/* Desktop Auth Controls with Zero-Flicker Skeleton */}
+        {/* Desktop Auth Controls */}
         <div className="hidden md:flex items-center gap-3 min-w-[120px] justify-end">
           {isPending ? (
-            // সেশন চেক করার ৫০ms সময়ে এই হালকা স্কেলিটন থাকবে, সাইন-ইন বাটন ফ্লিকার করবে না
             <div className="h-9 w-28 bg-[#151515]/5 border-2 border-[#151515]/20 rounded-[6px] animate-pulse" />
           ) : user ? (
             <UserDropdown user={user} />
