@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Search, RotateCcw, Filter, Layers, SlidersHorizontal, ArrowUpDown, ChevronDown } from "lucide-react";
@@ -21,36 +21,15 @@ export function ServiceSidebar({ currentFilters, categoryCounts }: ServiceSideba
   const router = useRouter();
   const [searchInput, setSearchInput] = useState(currentFilters.search || "");
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Close dropdown on outside click
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsCategoryOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  // Helper to build URL while preserving other active filters
-  const buildUrl = (overrides: Record<string, string | undefined>) => {
+  // Simplified URL query builder
+  const buildUrl = (updates: Record<string, string | undefined>) => {
     const params = new URLSearchParams();
-    const merged = {
-      search: currentFilters.search,
-      category: currentFilters.category,
-      serviceMode: currentFilters.serviceMode,
-      sort: currentFilters.sort,
-      ...overrides,
-    };
-
-    Object.entries(merged).forEach(([k, v]) => {
-      if (v && v.trim()) params.set(k, v.trim());
-    });
-
-    const query = params.toString();
-    return query ? `${ROUTES.SERVICES}?${query}` : ROUTES.SERVICES;
+    const merged = { ...currentFilters, ...updates };
+    for (const [key, val] of Object.entries(merged)) {
+      if (val?.trim()) params.set(key, val.trim());
+    }
+    return params.toString() ? `${ROUTES.SERVICES}?${params}` : ROUTES.SERVICES;
   };
 
   const handleSearchSubmit = (e: React.FormEvent) => {
@@ -115,18 +94,18 @@ export function ServiceSidebar({ currentFilters, categoryCounts }: ServiceSideba
         </form>
       </div>
 
-      {/* 3. Custom Neobrutalist Category Dropdown */}
-      <div className="relative" ref={dropdownRef}>
+      {/* 3. Category Dropdown (Zero useEffect / Zero useRef) */}
+      <div className="relative">
         <label className="block font-mono text-[11px] font-bold text-[#151515] uppercase mb-1.5 flex items-center gap-1.5">
           <Layers className="w-3.5 h-3.5 text-[#151515]" />
           <span>Category</span>
         </label>
         
-        {/* Dropdown Trigger Button */}
+        {/* Trigger Button */}
         <button
           type="button"
           onClick={() => setIsCategoryOpen(!isCategoryOpen)}
-          className="w-full flex items-center justify-between px-3 py-2 bg-[#FCD03D] border-2 border-[#151515] rounded-[6px] shadow-[2px_2px_0px_#151515] font-mono text-xs font-bold text-[#151515] cursor-pointer hover:bg-[#ffe066] transition-colors"
+          className="w-full flex items-center justify-between px-3 py-2 bg-[#FCD03D] border-2 border-[#151515] rounded-[6px] shadow-[2px_2px_0px_#151515] font-mono text-xs font-bold text-[#151515] cursor-pointer hover:bg-[#ffe066] transition-colors relative z-40"
         >
           <span className="truncate">{currentFilters.category || "All Categories"}</span>
           <div className="flex items-center gap-2 shrink-0 ml-2">
@@ -137,54 +116,61 @@ export function ServiceSidebar({ currentFilters, categoryCounts }: ServiceSideba
           </div>
         </button>
 
-        {/* Dropdown Menu (Styled with Yellow Selected & Count Badge on Right) */}
+        {/* Dropdown Menu & React Click-Outside Backdrop */}
         {isCategoryOpen && (
-          <div className="absolute left-0 right-0 top-full mt-1.5 z-40 bg-white border-2 border-[#151515] rounded-[8px] shadow-[4px_4px_0px_#151515] p-1.5 space-y-1 max-h-64 overflow-y-auto">
-            {/* All Categories Option */}
-            <Link
-              href={buildUrl({ category: "" })}
-              scroll={false}
+          <>
+            {/* Pure React Invisible Backdrop */}
+            <div
+              className="fixed inset-0 z-30"
               onClick={() => setIsCategoryOpen(false)}
-              className={`flex items-center justify-between px-2.5 py-1.5 rounded-[6px] text-xs font-mono transition-all border-2 ${
-                !currentFilters.category
-                  ? "bg-[#FCD03D] font-bold border-[#151515] shadow-[1px_1px_0px_#151515]"
-                  : "border-transparent text-[#151515]/80 hover:bg-[#F5F0E6] hover:border-[#151515]/20 font-medium"
-              }`}
-            >
-              <span>All Categories</span>
-              <span className="font-bold text-[10px] bg-white border border-[#151515] px-1.5 py-0.5 rounded-[4px] shadow-[1px_1px_0px_#151515]">
-                {totalAllServices}
-              </span>
-            </Link>
+            />
+            
+            {/* Menu List */}
+            <div className="absolute left-0 right-0 top-full mt-1.5 z-40 bg-white border-2 border-[#151515] rounded-[8px] shadow-[4px_4px_0px_#151515] p-1.5 space-y-1 max-h-64 overflow-y-auto">
+              <Link
+                href={buildUrl({ category: "" })}
+                scroll={false}
+                onClick={() => setIsCategoryOpen(false)}
+                className={`flex items-center justify-between px-2.5 py-1.5 rounded-[6px] text-xs font-mono transition-all border-2 ${
+                  !currentFilters.category
+                    ? "bg-[#FCD03D] font-bold border-[#151515] shadow-[1px_1px_0px_#151515]"
+                    : "border-transparent text-[#151515]/80 hover:bg-[#F5F0E6] hover:border-[#151515]/20 font-medium"
+                }`}
+              >
+                <span>All Categories</span>
+                <span className="font-bold text-[10px] bg-white border border-[#151515] px-1.5 py-0.5 rounded-[4px] shadow-[1px_1px_0px_#151515]">
+                  {totalAllServices}
+                </span>
+              </Link>
 
-            {/* Individual Categories */}
-            {SERVICE_CATEGORIES.map((cat) => {
-              const isSelected = currentFilters.category === cat;
-              const count = categoryCounts[cat] || 0;
-              return (
-                <Link
-                  key={cat}
-                  href={buildUrl({ category: isSelected ? "" : cat })}
-                  scroll={false}
-                  onClick={() => setIsCategoryOpen(false)}
-                  className={`flex items-center justify-between px-2.5 py-1.5 rounded-[6px] text-xs font-mono transition-all border-2 ${
-                    isSelected
-                      ? "bg-[#FCD03D] font-bold border-[#151515] shadow-[1px_1px_0px_#151515]"
-                      : "border-transparent text-[#151515]/80 hover:bg-[#F5F0E6] hover:border-[#151515]/20 font-medium"
-                  }`}
-                >
-                  <span className="truncate">{cat}</span>
-                  <span className="font-bold text-[10px] bg-white border border-[#151515] px-1.5 py-0.5 rounded-[4px] shadow-[1px_1px_0px_#151515]">
-                    {count}
-                  </span>
-                </Link>
-              );
-            })}
-          </div>
+              {SERVICE_CATEGORIES.map((cat) => {
+                const isSelected = currentFilters.category === cat;
+                const count = categoryCounts[cat] || 0;
+                return (
+                  <Link
+                    key={cat}
+                    href={buildUrl({ category: isSelected ? "" : cat })}
+                    scroll={false}
+                    onClick={() => setIsCategoryOpen(false)}
+                    className={`flex items-center justify-between px-2.5 py-1.5 rounded-[6px] text-xs font-mono transition-all border-2 ${
+                      isSelected
+                        ? "bg-[#FCD03D] font-bold border-[#151515] shadow-[1px_1px_0px_#151515]"
+                        : "border-transparent text-[#151515]/80 hover:bg-[#F5F0E6] hover:border-[#151515]/20 font-medium"
+                    }`}
+                  >
+                    <span className="truncate">{cat}</span>
+                    <span className="font-bold text-[10px] bg-white border border-[#151515] px-1.5 py-0.5 rounded-[4px] shadow-[1px_1px_0px_#151515]">
+                      {count}
+                    </span>
+                  </Link>
+                );
+              })}
+            </div>
+          </>
         )}
       </div>
 
-      {/* 4. Service Mode Filter (Yellow BG on click) */}
+      {/* 4. Service Mode Filter */}
       <div>
         <label className="block font-mono text-[11px] font-bold text-[#151515] uppercase mb-1.5 flex items-center gap-1.5">
           <SlidersHorizontal className="w-3.5 h-3.5 text-[#151515]" />
@@ -211,7 +197,7 @@ export function ServiceSidebar({ currentFilters, categoryCounts }: ServiceSideba
         </div>
       </div>
 
-      {/* 5. Sort By Filter (Yellow BG on click) */}
+      {/* 5. Sort By Filter */}
       <div>
         <label className="block font-mono text-[11px] font-bold text-[#151515] uppercase mb-1.5 flex items-center gap-1.5">
           <ArrowUpDown className="w-3.5 h-3.5 text-[#151515]" />

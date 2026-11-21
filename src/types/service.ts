@@ -1,6 +1,5 @@
 import { ApprovalStatus, ServiceCategory, ServiceMode } from "@/constants/roles";
 
-
 export interface Service {
   _id: string;
   title: string;
@@ -24,4 +23,16 @@ export interface ServiceFilters {
   serviceMode?: string;
   sort?: "price-asc" | "price-desc" | "newest";
   limit?: number;
+}
+
+export interface TechnicianSummary {
+  name: string;
+  image?: string;
+  area?: string;
+  bio?: string;
+  phone?: string;
+}
+
+export interface ServiceDetail extends Service {
+  technician?: TechnicianSummary;
 }

@@ -1,5 +1,5 @@
 import { API_ENDPOINTS } from "@/constants/api";
-import { Service } from "@/types/service";
+import { Service, ServiceDetail } from "@/types/service";
 
 /**
  * Server fetcher: Top 6 featured services for homepage
@@ -71,5 +71,26 @@ export async function fetchFilteredServices(filters: {
   } catch (error) {
     console.error("Failed to fetch filtered services:", error);
     return [];
+  }
+}
+
+/**
+ * Server fetcher: Single service details with technician profile summary (R07)
+ */
+export async function getServiceById(id: string): Promise<ServiceDetail | null> {
+  try {
+    // Security check: validate MongoDB ObjectId length
+    if (!id || id.length !== 24) return null;
+
+    const res = await fetch(`${API_ENDPOINTS.SERVICES.GET_ALL}/${id}`, {
+      next: { revalidate: 60 },
+    });
+
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data && data._id ? data : null;
+  } catch (error) {
+    console.error("Failed to fetch service details:", error);
+    return null;
   }
 }
