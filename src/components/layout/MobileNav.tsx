@@ -2,8 +2,12 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { Menu, X, ArrowRight } from "lucide-react";
+import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
+import { Menu, X, ArrowRight, LayoutDashboard, User as UserIcon, LogOut } from "lucide-react";
 import { ROUTES } from "@/constants/routes";
+import { signOut } from "@/lib/auth/auth-client";
+import { RoleBadge } from "@/components/shared/RoleBadge";
 
 interface NavLinkItem {
   label: string;
@@ -11,13 +15,44 @@ interface NavLinkItem {
   index: string;
 }
 
-export function MobileNav({ navLinks }: { navLinks: NavLinkItem[] }) {
+interface MobileNavProps {
+  navLinks: NavLinkItem[];
+  user?: {
+    name?: string | null;
+    email?: string | null;
+    image?: string | null;
+    role?: string | null;
+  } | null;
+  isLoading?: boolean;
+}
+
+export function MobileNav({ navLinks, user, isLoading = false }: MobileNavProps) {
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const closeMenu = () => setIsOpen(false);
 
+  const handleSignOut = async () => {
+    closeMenu();
+    try {
+      await signOut();
+      toast.success("Signed out successfully");
+      router.push(ROUTES.SIGN_IN);
+      router.refresh();
+    } catch {
+      toast.error("Failed to sign out");
+    }
+  };
+
+  const role = user?.role || "customer";
+  const dashboardHref =
+    role === "admin"
+      ? ROUTES.ADMIN.OVERVIEW
+      : role === "technician"
+      ? ROUTES.TECHNICIAN.OVERVIEW
+      : ROUTES.CUSTOMER.OVERVIEW;
+
   return (
     <div className="flex md:hidden items-center">
-      
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
@@ -27,7 +62,6 @@ export function MobileNav({ navLinks }: { navLinks: NavLinkItem[] }) {
         {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
       </button>
 
-     
       {isOpen && (
         <div className="fixed top-20 left-0 right-0 z-50 border-b-2 border-[#151515] bg-[#FEF9EF] px-5 py-6 flex flex-col gap-4 shadow-hard-lg animate-in slide-in-from-top-2 duration-200">
           <div className="flex items-center justify-between border-b-2 border-[#151515] pb-2">
@@ -38,6 +72,21 @@ export function MobileNav({ navLinks }: { navLinks: NavLinkItem[] }) {
               MOBILE MENU
             </span>
           </div>
+
+          {/* User Profile Card on Mobile if Logged In */}
+          {!isLoading && user && (
+            <div className="p-3 bg-white border-2 border-[#151515] rounded-[6px] shadow-hard-sm flex flex-col gap-1">
+              <span className="font-heading font-extrabold text-sm uppercase text-[#151515]">
+                {user.name || "Operator"}
+              </span>
+              <span className="font-mono text-xs text-[#5B403A] truncate">
+                {user.email || ""}
+              </span>
+              <div className="mt-1">
+                <RoleBadge role={role} />
+              </div>
+            </div>
+          )}
 
           <nav className="flex flex-col gap-2.5">
             {navLinks.map((link) => (
@@ -58,23 +107,72 @@ export function MobileNav({ navLinks }: { navLinks: NavLinkItem[] }) {
                 <ArrowRight className="w-4 h-4 text-[#151515]" />
               </Link>
             ))}
+
+            {/* Dashboard & Profile Links for Logged In User */}
+            {!isLoading && user && (
+              <>
+                <Link
+                  href={dashboardHref}
+                  onClick={closeMenu}
+                  className="flex items-center justify-between p-3.5 bg-[#FCD03D] text-[#151515] border-2 border-[#151515] rounded-[6px] shadow-hard-sm transition-all active:translate-x-[1px] active:translate-y-[1px]"
+                >
+                  <div className="flex items-center gap-3">
+                    <LayoutDashboard className="w-4 h-4" />
+                    <span className="text-sm font-black uppercase tracking-wide">
+                      Dashboard
+                    </span>
+                  </div>
+                  <ArrowRight className="w-4 h-4 text-[#151515]" />
+                </Link>
+
+                <Link
+                  href={ROUTES.PROFILE}
+                  onClick={closeMenu}
+                  className="flex items-center justify-between p-3.5 bg-white text-[#151515] border-2 border-[#151515] rounded-[6px] shadow-hard-sm transition-all active:translate-x-[1px] active:translate-y-[1px]"
+                >
+                  <div className="flex items-center gap-3">
+                    <UserIcon className="w-4 h-4" />
+                    <span className="text-sm font-black uppercase tracking-wide">
+                      Profile Settings
+                    </span>
+                  </div>
+                  <ArrowRight className="w-4 h-4 text-[#151515]" />
+                </Link>
+              </>
+            )}
           </nav>
 
-          <div className="pt-3 border-t-2 border-dashed border-[#151515] grid grid-cols-2 gap-3">
-            <Link
-              href={ROUTES.SIGN_IN}
-              onClick={closeMenu}
-              className="py-3 px-4 text-center bg-white text-[#151515] font-bold text-xs uppercase tracking-wider border-2 border-[#151515] shadow-hard-sm hover:translate-x-[1px] hover:translate-y-[1px] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all rounded-[6px]"
-            >
-              Sign In
-            </Link>
-            <Link
-              href={ROUTES.SIGN_UP}
-              onClick={closeMenu}
-              className="py-3 px-4 text-center bg-[#FF5B2E] text-white font-bold text-xs uppercase tracking-wider border-2 border-[#151515] shadow-hard-sm hover:translate-x-[1px] hover:translate-y-[1px] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all rounded-[6px]"
-            >
-              Sign Up
-            </Link>
+          {/* Bottom Auth Buttons */}
+          <div className="pt-3 border-t-2 border-dashed border-[#151515]">
+            {isLoading ? (
+              <div className="h-10 w-full bg-[#151515]/10 rounded-[6px] animate-pulse" />
+            ) : user ? (
+              <button
+                type="button"
+                onClick={handleSignOut}
+                className="w-full py-3 px-4 text-center bg-[#FFDAD6] text-[#BA1A1A] font-bold text-xs uppercase tracking-wider border-2 border-[#151515] shadow-hard-sm flex items-center justify-center gap-2 cursor-pointer active:translate-x-[1px] active:translate-y-[1px]"
+              >
+                <LogOut className="w-4 h-4" />
+                <span>Sign Out</span>
+              </button>
+            ) : (
+              <div className="grid grid-cols-2 gap-3">
+                <Link
+                  href={ROUTES.SIGN_IN}
+                  onClick={closeMenu}
+                  className="py-3 px-4 text-center bg-white text-[#151515] font-bold text-xs uppercase tracking-wider border-2 border-[#151515] shadow-hard-sm hover:translate-x-[1px] hover:translate-y-[1px] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all rounded-[6px]"
+                >
+                  Sign In
+                </Link>
+                <Link
+                  href={ROUTES.SIGN_UP}
+                  onClick={closeMenu}
+                  className="py-3 px-4 text-center bg-[#FF5B2E] text-[#151515] font-bold text-xs uppercase tracking-wider border-2 border-[#151515] shadow-hard-sm hover:translate-x-[1px] hover:translate-y-[1px] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all rounded-[6px]"
+                >
+                  Sign Up
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       )}

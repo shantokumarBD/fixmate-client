@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Eye, EyeOff } from "lucide-react";
 import { signUp } from "@/lib/auth/auth-client";
 import { ROUTES } from "@/constants/routes";
 import { signUpSchema } from "@/validations/auth";
@@ -17,6 +17,7 @@ export function SignUpForm() {
   const [role, setRole] = useState<"customer" | "technician">("customer");
   const [imageUrl, setImageUrl] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -40,17 +41,13 @@ export function SignUpForm() {
     setIsLoading(true);
 
     try {
-      const { data, error } = await signUp.email({
+      const { error } = await signUp.email({
         name: validation.data.name,
         email: validation.data.email,
         password: validation.data.password,
         role: validation.data.role,
         phone: validation.data.phone || "",
         image: validation.data.image || "",
-        callbackURL:
-          validation.data.role === "technician"
-            ? ROUTES.TECHNICIAN.OVERVIEW
-            : ROUTES.CUSTOMER.OVERVIEW,
       } as Parameters<typeof signUp.email>[0]);
 
       if (error) {
@@ -59,14 +56,8 @@ export function SignUpForm() {
         return;
       }
 
-      toast.success(`Welcome to FixMate, ${data?.user?.name || "User"}!`);
-
-      const targetRoute =
-        data?.user?.role === "technician"
-          ? ROUTES.TECHNICIAN.OVERVIEW
-          : ROUTES.CUSTOMER.OVERVIEW;
-
-      router.push(targetRoute);
+      toast.success("Account created successfully! Please sign in.");
+      router.push(ROUTES.SIGN_IN);
       router.refresh();
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : "Something went wrong");
@@ -148,7 +139,7 @@ export function SignUpForm() {
         disabled={isLoading}
       />
 
-      {/* Password */}
+      {/* Password with Eye Toggle */}
       <div className="flex flex-col gap-1">
         <label
           htmlFor="password"
@@ -156,19 +147,34 @@ export function SignUpForm() {
         >
           Password
         </label>
-        <input
-          id="password"
-          name="password"
-          type="password"
-          placeholder="Min 6 chars, 1 uppercase, 1 lowercase"
-          required
-          autoComplete="new-password"
-          disabled={isLoading}
-          className="w-full bg-white text-[#151515] font-medium border-2 border-[#151515] rounded-[6px] p-2 font-mono text-xs placeholder:text-[#9E9E9E] outline-none transition focus:shadow-[2px_2px_0px_#151515] disabled:opacity-60"
-        />
+        <div className="relative w-full">
+          <input
+            id="password"
+            name="password"
+            type={showPassword ? "text" : "password"}
+            placeholder="Min 6 chars, 1 uppercase, 1 lowercase"
+            required
+            autoComplete="new-password"
+            disabled={isLoading}
+            className="w-full block bg-white text-[#151515] font-medium border-2 border-[#151515] rounded-[6px] p-2 pr-10 font-mono text-xs placeholder:text-[#9E9E9E] outline-none transition focus:shadow-[2px_2px_0px_#151515] disabled:opacity-60"
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#7A5B53] hover:text-[#151515] p-1 cursor-pointer flex items-center justify-center"
+            tabIndex={-1}
+            aria-label={showPassword ? "Hide password" : "Show password"}
+          >
+            {showPassword ? (
+              <EyeOff className="w-3.5 h-3.5" />
+            ) : (
+              <Eye className="w-3.5 h-3.5" />
+            )}
+          </button>
+        </div>
       </div>
 
-      {/* Submit CTA Button with Authentic Black Text */}
+      {/* Submit CTA Button */}
       <Button
         type="submit"
         isLoading={isLoading}
