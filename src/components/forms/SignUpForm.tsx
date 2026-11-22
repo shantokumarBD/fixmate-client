@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-import { ArrowRight, Eye, EyeOff } from "lucide-react";
+import { ArrowRight, Eye, EyeOff, AlertCircle } from "lucide-react";
 import { signUp } from "@/lib/auth/auth-client";
 import { ROUTES } from "@/constants/routes";
 import { signUpSchema } from "@/validations/auth";
@@ -18,9 +18,16 @@ export function SignUpForm() {
   const [imageUrl, setImageUrl] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<{
+    name?: string;
+    email?: string;
+    password?: string;
+    phone?: string;
+  }>({});
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setFieldErrors({});
 
     const formData = new FormData(e.currentTarget);
     const rawData = {
@@ -34,7 +41,14 @@ export function SignUpForm() {
 
     const validation = signUpSchema.safeParse(rawData);
     if (!validation.success) {
-      toast.error(validation.error.issues[0]?.message || "Invalid input");
+      const errors: { [key: string]: string } = {};
+      for (const issue of validation.error.issues) {
+        const fieldName = issue.path[0]?.toString();
+        if (fieldName && !errors[fieldName]) {
+          errors[fieldName] = issue.message;
+        }
+      }
+      setFieldErrors(errors);
       return;
     }
 
@@ -87,8 +101,16 @@ export function SignUpForm() {
             required
             autoComplete="name"
             disabled={isLoading}
-            className="w-full bg-white text-[#151515] font-medium border-2 border-[#151515] rounded-[6px] p-2 font-mono text-xs placeholder:text-[#9E9E9E] outline-none transition focus:shadow-[2px_2px_0px_#151515] disabled:opacity-60"
+            className={`w-full bg-white text-[#151515] font-medium border-2 ${
+              fieldErrors.name ? "border-[#BA1A1A]" : "border-[#151515]"
+            } rounded-[6px] p-2 font-mono text-xs placeholder:text-[#9E9E9E] outline-none transition focus:shadow-[2px_2px_0px_#151515] disabled:opacity-60`}
           />
+          {fieldErrors.name && (
+            <span className="font-mono text-[10px] text-[#BA1A1A] font-semibold flex items-center gap-1 mt-0.5">
+              <AlertCircle className="w-3 h-3 shrink-0" />
+              {fieldErrors.name}
+            </span>
+          )}
         </div>
 
         <div className="flex flex-col gap-1">
@@ -106,8 +128,16 @@ export function SignUpForm() {
             placeholder="017XXXXXXXX"
             autoComplete="tel"
             disabled={isLoading}
-            className="w-full bg-white text-[#151515] font-medium border-2 border-[#151515] rounded-[6px] p-2 font-mono text-xs placeholder:text-[#9E9E9E] outline-none transition focus:shadow-[2px_2px_0px_#151515] disabled:opacity-60"
+            className={`w-full bg-white text-[#151515] font-medium border-2 ${
+              fieldErrors.phone ? "border-[#BA1A1A]" : "border-[#151515]"
+            } rounded-[6px] p-2 font-mono text-xs placeholder:text-[#9E9E9E] outline-none transition focus:shadow-[2px_2px_0px_#151515] disabled:opacity-60`}
           />
+          {fieldErrors.phone && (
+            <span className="font-mono text-[10px] text-[#BA1A1A] font-semibold flex items-center gap-1 mt-0.5">
+              <AlertCircle className="w-3 h-3 shrink-0" />
+              {fieldErrors.phone}
+            </span>
+          )}
         </div>
       </div>
 
@@ -127,8 +157,16 @@ export function SignUpForm() {
           required
           autoComplete="email"
           disabled={isLoading}
-          className="w-full bg-white text-[#151515] font-medium border-2 border-[#151515] rounded-[6px] p-2 font-mono text-xs placeholder:text-[#9E9E9E] outline-none transition focus:shadow-[2px_2px_0px_#151515] disabled:opacity-60"
+          className={`w-full bg-white text-[#151515] font-medium border-2 ${
+            fieldErrors.email ? "border-[#BA1A1A]" : "border-[#151515]"
+          } rounded-[6px] p-2 font-mono text-xs placeholder:text-[#9E9E9E] outline-none transition focus:shadow-[2px_2px_0px_#151515] disabled:opacity-60`}
         />
+        {fieldErrors.email && (
+          <span className="font-mono text-[10px] text-[#BA1A1A] font-semibold flex items-center gap-1 mt-0.5">
+            <AlertCircle className="w-3 h-3 shrink-0" />
+            {fieldErrors.email}
+          </span>
+        )}
       </div>
 
       {/* Image Uploader */}
@@ -139,24 +177,31 @@ export function SignUpForm() {
         disabled={isLoading}
       />
 
-      {/* Password with Eye Toggle */}
+      {/* Password with Eye Toggle & Requirements Info */}
       <div className="flex flex-col gap-1">
-        <label
-          htmlFor="password"
-          className="font-mono text-[11px] font-medium tracking-wide text-[#7A5B53] uppercase"
-        >
-          Password
-        </label>
+        <div className="flex items-center justify-between">
+          <label
+            htmlFor="password"
+            className="font-mono text-[11px] font-medium tracking-wide text-[#7A5B53] uppercase"
+          >
+            Password
+          </label>
+          <span className="font-mono text-[9px] text-[#8F7068]">
+            Min 6 chars • 1 upper • 1 lower
+          </span>
+        </div>
         <div className="relative w-full">
           <input
             id="password"
             name="password"
             type={showPassword ? "text" : "password"}
-            placeholder="Min 6 chars, 1 uppercase, 1 lowercase"
+            placeholder="Enter secure password"
             required
             autoComplete="new-password"
             disabled={isLoading}
-            className="w-full block bg-white text-[#151515] font-medium border-2 border-[#151515] rounded-[6px] p-2 pr-10 font-mono text-xs placeholder:text-[#9E9E9E] outline-none transition focus:shadow-[2px_2px_0px_#151515] disabled:opacity-60"
+            className={`w-full block bg-white text-[#151515] font-medium border-2 ${
+              fieldErrors.password ? "border-[#BA1A1A]" : "border-[#151515]"
+            } rounded-[6px] p-2 pr-10 font-mono text-xs placeholder:text-[#9E9E9E] outline-none transition focus:shadow-[2px_2px_0px_#151515] disabled:opacity-60`}
           />
           <button
             type="button"
@@ -172,6 +217,12 @@ export function SignUpForm() {
             )}
           </button>
         </div>
+        {fieldErrors.password && (
+          <span className="font-mono text-[10px] text-[#BA1A1A] font-semibold flex items-center gap-1 mt-0.5">
+            <AlertCircle className="w-3 h-3 shrink-0" />
+            {fieldErrors.password}
+          </span>
+        )}
       </div>
 
       {/* Submit CTA Button */}

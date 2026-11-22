@@ -6,12 +6,12 @@ import { useRouter, useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
 import { ArrowRight, Eye, EyeOff } from "lucide-react";
 import { signIn } from "@/lib/auth/auth-client";
+import { syncTokenCookieAction } from "@/actions/auth";
 import { ROUTES } from "@/constants/routes";
 import { signInSchema } from "@/validations/auth";
 import { Button } from "@/components/ui/button";
 
 export function SignInForm() {
-  
   const router = useRouter();
 
   const searchParams = useSearchParams();
@@ -29,8 +29,12 @@ export function SignInForm() {
   const handleDemoFill = (role: "customer" | "technician" | "admin") => {
     if (!formRef.current) return;
     const form = formRef.current;
-    const emailInput = form.elements.namedItem("email") as HTMLInputElement | null;
-    const passwordInput = form.elements.namedItem("password") as HTMLInputElement | null;
+    const emailInput = form.elements.namedItem(
+      "email",
+    ) as HTMLInputElement | null;
+    const passwordInput = form.elements.namedItem(
+      "password",
+    ) as HTMLInputElement | null;
 
     if (emailInput && passwordInput) {
       if (role === "customer") {
@@ -52,7 +56,9 @@ export function SignInForm() {
 
     const formData = new FormData(e.currentTarget);
     const rawData = {
-      email: String(formData.get("email") || "").trim().toLowerCase(),
+      email: String(formData.get("email") || "")
+        .trim()
+        .toLowerCase(),
       password: String(formData.get("password") || ""),
     };
 
@@ -75,7 +81,13 @@ export function SignInForm() {
         setIsLoading(false);
         return;
       }
+      if (error || !data?.user) {
+        toast.error("Invalid email or password. Please sign up first.");
+        setIsLoading(false);
+        return;
+      }
 
+      await syncTokenCookieAction();
       toast.success(`Welcome back, ${data.user.name || "Operator"}!`);
 
       // Security: Open-Redirect Vulnerability Guard
