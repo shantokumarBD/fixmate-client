@@ -171,7 +171,7 @@ export default function AboutPage() {
         <div className="mb-10 flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b-2 border-dashed border-[#151515] pb-4">
           <div>
             <span className="font-mono text-xs font-bold text-[#FF5B2E] uppercase tracking-wider block">
-              // WORKBENCH DISPATCH
+              {"// WORKBENCH DISPATCH"}
             </span>
             <h2 className="font-heading font-extrabold text-2xl sm:text-3xl text-[#151515] uppercase tracking-tight mt-1">
               The 4-Step Repair Lifecycle
@@ -307,7 +307,7 @@ export default function AboutPage() {
         <div className="bg-[#FCD03D] border-2 border-[#151515] rounded-[10px] shadow-[6px_6px_0px_#151515] p-6 sm:p-10 flex flex-col sm:flex-row items-center justify-between gap-6">
           <div className="space-y-1 text-center sm:text-left">
             <span className="font-mono text-xs font-bold uppercase tracking-wider text-[#151515]">
-              // FAST RESPONSE DISPATCH
+              {"// FAST RESPONSE DISPATCH"}
             </span>
             <h3 className="font-heading font-extrabold text-2xl sm:text-3xl text-[#151515] uppercase tracking-tight">
               Ready to restore your device?

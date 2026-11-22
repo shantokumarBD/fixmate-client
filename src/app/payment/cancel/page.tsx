@@ -1,17 +1,22 @@
-// File: src/app/payment/cancel/page.tsx
 import Link from "next/link";
 import { AlertCircle, ArrowLeft, CalendarCheck } from "lucide-react";
+import { requireRole } from "@/lib/auth/session";
 import { ROUTES } from "@/constants/routes";
+
+export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "Payment Cancelled | FixMate",
 };
 
-export default function PaymentCancelPage() {
+export default async function PaymentCancelPage() {
+  // Customer-only route guard: unauthenticated users redirect to /sign-in,
+  // admins/technicians redirect to their respective dashboards.
+  await requireRole("customer");
+
   return (
     <main className="min-h-[80vh] py-12 px-4 flex items-center justify-center">
       <div className="w-full max-w-md bg-white border-2 border-[#151515] shadow-[8px_8px_0px_#151515] rounded-[12px] overflow-hidden text-center p-6 sm:p-8 space-y-4">
-        
         <div className="w-14 h-14 bg-[#FEF3C7] border-2 border-[#151515] rounded-full flex items-center justify-center mx-auto shadow-[2px_2px_0px_#151515]">
           <AlertCircle className="w-7 h-7 text-[#D97706]" />
         </div>
@@ -25,7 +30,9 @@ export default function PaymentCancelPage() {
         </h1>
 
         <p className="font-sans text-xs sm:text-sm text-[#5B403A] leading-relaxed">
-          The Stripe checkout session was cancelled. No charges were made to your account. You can complete this payment whenever you are ready from your bookings list.
+          The Stripe checkout session was cancelled. No charges were made to your
+          account. You can complete this payment whenever you are ready from your
+          bookings list.
         </p>
 
         <div className="pt-4 flex flex-col sm:flex-row gap-3">
