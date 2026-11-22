@@ -1,4 +1,3 @@
-import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -16,6 +15,27 @@ import {
 import { getServiceById } from "@/lib/api/services";
 import { BookServiceButton } from "@/components/services/BookServiceButton";
 import { ROUTES } from "@/constants/routes";
+import type { Metadata } from "next";
+
+export async function generateMetadata({
+  params,
+}: ServiceDetailsPageProps): Promise<Metadata> {
+  const { id } = await params;
+  const service = await getServiceById(id);
+
+  if (!service) {
+    return {
+      title: "Service Not Found | FixMate",
+    };
+  }
+
+  return {
+    title: `${service.title} | FixMate Workshop`,
+    description:
+      service.description?.slice(0, 160) ||
+      "Certified smart device and home appliance repair service with 90-day workshop warranty.",
+  };
+}
 
 interface ServiceDetailsPageProps {
   params: Promise<{

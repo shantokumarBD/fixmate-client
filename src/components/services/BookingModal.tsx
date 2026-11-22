@@ -20,8 +20,6 @@ export function BookingModal({
   service,
   isOpen,
   onClose,
-  customerPhone = "",
-  customerAddress = "",
 }: BookingModalProps) {
   const router = useRouter();
   const [charCount, setCharCount] = useState(0);

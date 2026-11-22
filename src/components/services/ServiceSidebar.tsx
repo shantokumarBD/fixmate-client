@@ -1,9 +1,18 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Search, RotateCcw, Filter, Layers, SlidersHorizontal, ArrowUpDown, ChevronDown } from "lucide-react";
+import {
+  Search,
+  RotateCcw,
+  Filter,
+  Layers,
+  SlidersHorizontal,
+  ArrowUpDown,
+  ChevronDown,
+  X,
+} from "lucide-react";
 import { SERVICE_CATEGORIES, SERVICE_MODES } from "@/constants/roles";
 import { ROUTES } from "@/constants/routes";
 
@@ -21,8 +30,9 @@ export function ServiceSidebar({ currentFilters, categoryCounts }: ServiceSideba
   const router = useRouter();
   const [searchInput, setSearchInput] = useState(currentFilters.search || "");
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Simplified URL query builder
+  
   const buildUrl = (updates: Record<string, string | undefined>) => {
     const params = new URLSearchParams();
     const merged = { ...currentFilters, ...updates };
@@ -32,8 +42,35 @@ export function ServiceSidebar({ currentFilters, categoryCounts }: ServiceSideba
     return params.toString() ? `${ROUTES.SERVICES}?${params}` : ROUTES.SERVICES;
   };
 
+  
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchInput(value);
+
+    
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+
+    debounceTimerRef.current = setTimeout(() => {
+      router.replace(buildUrl({ search: value }), { scroll: false });
+    }, 350);
+  };
+
+ 
+  const handleClearSearch = () => {
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+    setSearchInput("");
+    router.replace(buildUrl({ search: "" }), { scroll: false });
+  };
+
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
     router.replace(buildUrl({ search: searchInput }), { scroll: false });
   };
 
@@ -67,12 +104,12 @@ export function ServiceSidebar({ currentFilters, categoryCounts }: ServiceSideba
             className="flex items-center gap-1 font-mono text-[11px] font-bold text-[#FF5B2E] hover:underline"
           >
             <RotateCcw className="w-3 h-3" />
-            <span>Clear</span>
+            <span>Reset All</span>
           </Link>
         )}
       </div>
 
-      {/* 2. Search Input */}
+      {/* 2. Pure Event-Driven Search Input with Quick-Clear */}
       <div>
         <label className="block font-mono text-[11px] font-bold text-[#151515] uppercase mb-1.5">
           Search Repairs
@@ -81,20 +118,32 @@ export function ServiceSidebar({ currentFilters, categoryCounts }: ServiceSideba
           <input
             type="text"
             value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
+            onChange={handleSearchChange}
             placeholder="e.g. Screen, Battery, AC..."
-            className="w-full bg-[#F5F0E6] border-2 border-[#151515] rounded-[6px] pl-3 pr-9 py-2 text-xs font-mono font-medium text-[#151515] placeholder-[#151515]/50 focus:bg-white focus:outline-none"
+            className="w-full bg-[#F5F0E6] border-2 border-[#151515] rounded-[6px] pl-3 pr-14 py-2 text-xs font-mono font-medium text-[#151515] placeholder-[#151515]/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#FF5B2E] transition-all"
           />
-          <button
-            type="submit"
-            className="absolute right-1.5 top-1/2 -translate-y-1/2 p-1.5 bg-[#FCD03D] border-2 border-[#151515] rounded-[4px] shadow-[1px_1px_0px_#151515] hover:bg-[#ffe066]"
-          >
-            <Search className="w-3 h-3 text-[#151515]" />
-          </button>
+          <div className="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center gap-1">
+            {searchInput && (
+              <button
+                type="button"
+                onClick={handleClearSearch}
+                className="p-1 hover:bg-[#FFDAD6] text-[#DC2626] rounded transition-colors cursor-pointer"
+                title="Clear Search"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+            <button
+              type="submit"
+              className="p-1.5 bg-[#FCD03D] border-2 border-[#151515] rounded-[4px] shadow-[1px_1px_0px_#151515] hover:bg-[#ffe066] cursor-pointer"
+            >
+              <Search className="w-3 h-3 text-[#151515]" />
+            </button>
+          </div>
         </form>
       </div>
 
-      {/* 3. Category Dropdown (Zero useEffect / Zero useRef) */}
+      {/* 3. Category Dropdown */}
       <div className="relative">
         <label className="block font-mono text-[11px] font-bold text-[#151515] uppercase mb-1.5 flex items-center gap-1.5">
           <Layers className="w-3.5 h-3.5 text-[#151515]" />
@@ -116,16 +165,14 @@ export function ServiceSidebar({ currentFilters, categoryCounts }: ServiceSideba
           </div>
         </button>
 
-        {/* Dropdown Menu & React Click-Outside Backdrop */}
+        {/* Dropdown Menu & Click-Outside Backdrop */}
         {isCategoryOpen && (
           <>
-            {/* Pure React Invisible Backdrop */}
             <div
               className="fixed inset-0 z-30"
               onClick={() => setIsCategoryOpen(false)}
             />
             
-            {/* Menu List */}
             <div className="absolute left-0 right-0 top-full mt-1.5 z-40 bg-white border-2 border-[#151515] rounded-[8px] shadow-[4px_4px_0px_#151515] p-1.5 space-y-1 max-h-64 overflow-y-auto">
               <Link
                 href={buildUrl({ category: "" })}
