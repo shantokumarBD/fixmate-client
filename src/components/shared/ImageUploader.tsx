@@ -4,7 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import toast from "react-hot-toast";
 import { UploadCloud, Loader2, X } from "lucide-react";
-import { IMGBB_UPLOAD_URL } from "@/constants/api";
+import { uploadImageAction } from "@/actions/upload";
 
 interface ImageUploaderProps {
   value?: string;
@@ -25,28 +25,19 @@ export function ImageUploader({
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const apiKey = process.env.NEXT_PUBLIC_IMGBB_API_KEY;
-    if (!apiKey) {
-      toast.error("ImgBB API key is missing");
-      return;
-    }
-
     setLoading(true);
     const formData = new FormData();
     formData.append("image", file);
 
     try {
-      const res = await fetch(`${IMGBB_UPLOAD_URL}?key=${apiKey}`, {
-        method: "POST",
-        body: formData,
-      });
-      const data = await res.json();
+      // Secure Next.js Server Action call (Zero API key exposed in browser)
+      const res = await uploadImageAction(formData);
 
-      if (data.success && data.data?.url) {
-        onChange(data.data.url);
+      if (res.success && res.url) {
+        onChange(res.url);
         toast.success("Photo uploaded!");
       } else {
-        toast.error(data.error?.message || "Upload failed");
+        toast.error(res.error || "Upload failed");
       }
     } catch {
       toast.error("Network error during upload");
