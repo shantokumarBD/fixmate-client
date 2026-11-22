@@ -10,6 +10,7 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { signOut } from "@/lib/auth/auth-client";
+import { removeTokenCookieAction } from "@/actions/auth";
 import { ROUTES } from "@/constants/routes";
 import { RoleBadge } from "@/components/shared/RoleBadge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -35,6 +36,7 @@ export function UserDropdown({ user }: UserDropdownProps) {
 
   const handleSignOut = async () => {
     try {
+      await removeTokenCookieAction();
       await signOut();
       toast.success("Signed out successfully");
       router.push(ROUTES.SIGN_IN);

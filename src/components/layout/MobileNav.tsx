@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import toast from "react-hot-toast";
 import { Menu, X, ArrowRight, LayoutDashboard, User as UserIcon, LogOut } from "lucide-react";
 import { ROUTES } from "@/constants/routes";
@@ -28,6 +28,7 @@ interface MobileNavProps {
 
 export function MobileNav({ navLinks, user, isLoading = false }: MobileNavProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const closeMenu = () => setIsOpen(false);
 
@@ -89,24 +90,42 @@ export function MobileNav({ navLinks, user, isLoading = false }: MobileNavProps)
           )}
 
           <nav className="flex flex-col gap-2.5">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                onClick={closeMenu}
-                className="flex items-center justify-between p-3.5 bg-white text-[#151515] hover:bg-[#F2EDE3] border-2 border-[#151515] rounded-[6px] shadow-hard-sm transition-all active:translate-x-[1px] active:translate-y-[1px]"
-              >
-                <div className="flex items-center gap-3">
-                  <span className="text-xs font-mono font-black text-[#FF5B2E]">
-                    {link.index}
-                  </span>
-                  <span className="text-sm font-black uppercase tracking-wide">
-                    {link.label}
-                  </span>
-                </div>
-                <ArrowRight className="w-4 h-4 text-[#151515]" />
-              </Link>
-            ))}
+            {navLinks.map((link) => {
+              const isActive =
+                pathname === link.href ||
+                (link.href !== ROUTES.HOME && pathname?.startsWith(link.href));
+
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={closeMenu}
+                  className={`flex items-center justify-between p-3.5 border-2 border-[#151515] rounded-[6px] shadow-hard-sm transition-all active:translate-x-[1px] active:translate-y-[1px] ${
+                    isActive
+                      ? "bg-[#FF5B2E] text-white"
+                      : "bg-white text-[#151515] hover:bg-[#F2EDE3]"
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <span
+                      className={`text-xs font-mono font-black ${
+                        isActive ? "text-white" : "text-[#FF5B2E]"
+                      }`}
+                    >
+                      {link.index}
+                    </span>
+                    <span className="font-heading font-extrabold text-sm uppercase">
+                      {link.label}
+                    </span>
+                  </div>
+                  <ArrowRight
+                    className={`w-4 h-4 ${
+                      isActive ? "text-white" : "text-[#151515]/60"
+                    }`}
+                  />
+                </Link>
+              );
+            })}
 
             {/* Dashboard & Profile Links for Logged In User */}
             {!isLoading && user && (

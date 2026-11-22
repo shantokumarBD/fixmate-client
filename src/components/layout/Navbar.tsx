@@ -30,15 +30,25 @@ export function Navbar() {
         <Logo />
 
         <nav className="hidden md:flex items-center gap-8 h-full">
-          {NAV_LINKS.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className="h-full flex items-center font-bold text-xs uppercase tracking-wider text-[#151515]/80 hover:text-[#FF5B2E] transition-colors"
-            >
-              {link.label}
-            </Link>
-          ))}
+          {NAV_LINKS.map((link) => {
+            const isActive =
+              pathname === link.href ||
+              (link.href !== ROUTES.HOME && pathname?.startsWith(link.href));
+
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`h-full flex items-center font-bold text-xs uppercase tracking-wider transition-colors relative ${
+                  isActive
+                    ? "text-[#FF5B2E] border-b-[3px] border-[#FF5B2E]"
+                    : "text-[#151515]/80 hover:text-[#FF5B2E]"
+                }`}
+              >
+                {link.label}
+              </Link>
+            );
+          })}
         </nav>
 
         {/* Desktop Auth Controls */}
