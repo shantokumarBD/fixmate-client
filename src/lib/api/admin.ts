@@ -3,6 +3,7 @@ import { authFetch } from "@/lib/auth/session";
 import { Booking } from "@/types/booking";
 import { User } from "@/types/user";
 import { Service } from "@/types/service";
+import { Payment } from "@/types/payment";
 
 export interface AdminStats {
   totalUsers: number;
@@ -10,6 +11,11 @@ export interface AdminStats {
   totalServices: number;
   pendingServices: number;
   totalBookings: number;
+  totalRevenue: number;
+}
+
+export interface AdminPaymentsResponse {
+  payments: Payment[];
   totalRevenue: number;
 }
 
@@ -98,5 +104,28 @@ export async function getAllServicesForAdmin(): Promise<Service[]> {
     return Array.isArray(data) ? data : [];
   } catch {
     return [];
+  }
+}
+
+/**
+ * Fetch all transaction audit records for Admin (R25 & Item 6)
+ */
+export async function getAllPaymentsForAdmin(): Promise<AdminPaymentsResponse> {
+  try {
+    const res = await authFetch(API_ENDPOINTS.ADMIN.GET_PAYMENTS, {
+      cache: "no-store",
+    });
+
+    if (!res.ok) {
+      return { payments: [], totalRevenue: 0 };
+    }
+
+    const data = await res.json();
+    return {
+      payments: Array.isArray(data.payments) ? data.payments : [],
+      totalRevenue: Number(data.totalRevenue) || 0,
+    };
+  } catch {
+    return { payments: [], totalRevenue: 0 };
   }
 }
