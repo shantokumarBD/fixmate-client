@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { ROUTES } from "@/constants/routes";
+import { UserRole } from "@/constants/roles";
 import { getSession } from "@/lib/auth/session";
 import { getMyProfile } from "@/lib/api/user";
 import { ProfileSettingsForm } from "@/components/forms/ProfileSettingsForm";
@@ -27,7 +28,7 @@ export default async function DashboardProfilePage() {
     name: session.user.name || "",
     email: session.user.email || "",
     image: session.user.image || "",
-    role: ((session.user as Record<string, unknown>).role as any) || "customer",
+    role: ((session.user as Record<string, unknown>).role as UserRole) || "customer",
   };
 
   return (

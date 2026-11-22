@@ -31,9 +31,10 @@ export async function updateProfileAction(input: UpdateProfileInput) {
       };
     }
 
-    // Revalidate profile and dashboard layouts
+    // Revalidate profile, dashboard layouts, and root navbar layout
     revalidatePath("/dashboard/profile");
-    revalidatePath("/dashboard");
+    revalidatePath("/dashboard", "layout");
+    revalidatePath("/", "layout");
 
     return {
       success: true,

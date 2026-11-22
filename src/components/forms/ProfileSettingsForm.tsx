@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { User } from "@/types/user";
 import { updateProfileAction } from "@/actions/user";
+import { authClient } from "@/lib/auth/auth-client";
 import { ImageUploader } from "@/components/shared/ImageUploader";
 import {
   User as UserIcon,
@@ -54,6 +55,15 @@ export function ProfileSettingsForm({ initialUser }: ProfileSettingsFormProps) {
       });
 
       if (res.success) {
+        try {
+          await authClient.updateUser({
+            name: name.trim(),
+            image: imageUrl.trim() || undefined,
+          });
+        } catch {
+          
+        }
+
         toast.success(res.message || "Profile updated successfully!");
         router.refresh();
       } else {
