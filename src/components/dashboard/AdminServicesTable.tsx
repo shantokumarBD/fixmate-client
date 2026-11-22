@@ -177,7 +177,7 @@ export function AdminServicesTable({ services }: AdminServicesTableProps) {
             <table className="w-full text-left border-collapse min-w-[800px] lg:min-w-0">
               <thead>
                 <tr className="bg-[#FEF9EF] border-b-2 border-[#151515] font-mono text-xs text-[#151515] uppercase tracking-wider">
-                  <th className="py-3 px-3 sm:px-4 font-extrabold sticky left-0 z-20 bg-[#FEF9EF] border-r-2 border-[#151515] shadow-[2px_0px_0px_#151515] min-w-[240px]">
+                  <th className="py-3 px-3 sm:px-4 font-extrabold min-w-[240px]">
                     Service Offering
                   </th>
                   <th className="py-3 px-3.5 font-extrabold min-w-[160px]">
@@ -206,8 +206,7 @@ export function AdminServicesTable({ services }: AdminServicesTableProps) {
                       key={s._id}
                       className="group hover:bg-[#FEF9EF]/50 transition-colors"
                     >
-                      {/* Sticky Service Thumbnail & Title (Left 0) */}
-                      <td className="py-3 px-3 sm:px-4 sticky left-0 z-10 bg-white group-hover:bg-[#FEF9EF] border-r-2 border-[#151515] shadow-[2px_0px_0px_#151515] transition-colors">
+                      <td className="py-3 px-3 sm:px-4">
                         <div className="flex items-center gap-3">
                           <div className="w-12 h-12 bg-[#DEDAD0] border-2 border-[#151515] rounded-[6px] relative overflow-hidden shrink-0 shadow-[2px_2px_0px_#151515]">
                             <Image
