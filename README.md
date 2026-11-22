@@ -25,8 +25,8 @@
 
 | Service | URL / Value |
 | :--- | :--- |
-| **Live Client Application** | `https://fixmate-client.vercel.app` *(or your Vercel deployment URL)* |
-| **Live Backend API Gateway** | `https://fixmate-server.onrender.com` *(or your server deployment URL)* |
+| **Live Client Application** | [https://fixmatebd.vercel.app](https://fixmatebd.vercel.app) |
+| **Live Backend API Gateway** | [https://fixmate-server-dk6f.onrender.com](https://fixmate-server-dk6f.onrender.com) |
 
 ### Evaluation Test Accounts (Pre-Seeded)
 Use the 1-click **Quick Demo Fill** buttons on the `/sign-in` page or manually authenticate with:
