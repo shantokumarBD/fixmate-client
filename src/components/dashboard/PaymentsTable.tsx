@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import toast from "react-hot-toast";
 import { Payment } from "@/types/payment";
 import { PaymentBadge } from "@/components/shared/PaymentBadge";
 import { formatCurrency, formatDate } from "@/lib/utils";
@@ -12,8 +13,9 @@ import {
   ArrowRight,
   Receipt,
   DollarSign,
-  ShieldCheck,
   CheckCircle2,
+  Copy,
+  Check,
 } from "lucide-react";
 
 interface PaymentsTableProps {
@@ -22,6 +24,7 @@ interface PaymentsTableProps {
 
 export function PaymentsTable({ payments }: PaymentsTableProps) {
   const [searchQuery, setSearchQuery] = useState("");
+  const [copiedId, setCopiedId] = useState<string | null>(null);
 
   // ১. সামারি ক্যালকুলেশন
   const totalAmountPaid = payments.reduce((acc, curr) => acc + (curr.amount || 0), 0);
@@ -38,6 +41,15 @@ export function PaymentsTable({ payments }: PaymentsTableProps) {
       p.stripeSessionId?.toLowerCase().includes(q)
     );
   });
+
+  // ৩. Transaction ID ক্লিপবোর্ডে কপি করার হ্যান্ডলার
+  const handleCopyTxn = (txnId: string) => {
+    if (!txnId) return;
+    navigator.clipboard.writeText(txnId);
+    setCopiedId(txnId);
+    toast.success("Transaction ID copied to clipboard!");
+    setTimeout(() => setCopiedId(null), 2000);
+  };
 
   return (
     <div className="space-y-6">
@@ -141,27 +153,56 @@ export function PaymentsTable({ payments }: PaymentsTableProps) {
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-[#FEF9EF] border-b-2 border-[#151515] font-mono text-xs text-[#151515] uppercase">
-                    <th className="py-3 px-4 font-bold tracking-wider">Transaction ID</th>
-                    <th className="py-3 px-4 font-bold tracking-wider">Service Title</th>
-                    <th className="py-3 px-4 font-bold tracking-wider">Specialist</th>
-                    <th className="py-3 px-4 font-bold tracking-wider">Settled Date</th>
-                    <th className="py-3 px-4 font-bold tracking-wider">Amount Paid</th>
-                    <th className="py-3 px-4 font-bold tracking-wider text-right">Status</th>
+                    <th className="py-3 px-4 font-bold tracking-wider min-w-[260px]">
+                      Transaction ID
+                    </th>
+                    <th className="py-3 px-4 font-bold tracking-wider">
+                      Service Title
+                    </th>
+                    <th className="py-3 px-4 font-bold tracking-wider">
+                      Specialist
+                    </th>
+                    <th className="py-3 px-4 font-bold tracking-wider">
+                      Settled Date
+                    </th>
+                    <th className="py-3 px-4 font-bold tracking-wider">
+                      Amount Paid
+                    </th>
+                    <th className="py-3 px-4 font-bold tracking-wider text-right">
+                      Status
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y-2 divide-[#151515] font-sans text-xs sm:text-sm">
                   {filteredPayments.map((p) => {
-                    const shortTxn = p.transactionId
-                      ? `${p.transactionId.slice(0, 14)}...`
-                      : "TXN_STRIPE_VERIFIED";
+                    const txnId = p.transactionId || "TXN_STRIPE_VERIFIED";
 
                     return (
                       <tr key={p._id} className="hover:bg-[#FEF9EF]/50 transition-colors">
-                        {/* Transaction ID */}
+                        {/* Full Transaction ID with 1-Click Copy Button */}
                         <td className="py-3.5 px-4 font-mono">
-                          <span className="font-bold text-[#151515] bg-[#F2EDE3] border border-[#151515] px-2 py-0.5 rounded-[4px] text-xs">
-                            {shortTxn}
-                          </span>
+                          <div className="inline-flex items-center gap-2 max-w-full">
+                            <span
+                              title={txnId}
+                              className="font-bold text-[#151515] bg-[#F2EDE3] border-2 border-[#151515] shadow-[1.5px_1.5px_0px_#151515] px-2.5 py-1 rounded-[5px] text-xs select-all tracking-tight"
+                            >
+                              {txnId}
+                            </span>
+                            {p.transactionId && (
+                              <button
+                                type="button"
+                                onClick={() => handleCopyTxn(p.transactionId)}
+                                className="p-1.5 bg-white hover:bg-[#FCD03D] border-2 border-[#151515] shadow-[1.5px_1.5px_0px_#151515] rounded-[4px] cursor-pointer transition-all active:translate-x-0.5 active:translate-y-0.5 shrink-0"
+                                title="Copy Full Transaction ID"
+                              >
+                                {copiedId === p.transactionId ? (
+                                  <Check className="w-3.5 h-3.5 text-[#16A34A]" />
+                                ) : (
+                                  <Copy className="w-3.5 h-3.5 text-[#151515]" />
+                                )}
+                              </button>
+                            )}
+                          </div>
                         </td>
 
                         {/* Service Title */}
@@ -213,9 +254,26 @@ export function PaymentsTable({ payments }: PaymentsTableProps) {
                 <div key={p._id} className="p-4 space-y-3">
                   <div className="flex items-start justify-between gap-2">
                     <div>
-                      <span className="font-mono text-[10px] text-[#5B403A] block truncate max-w-[200px]">
-                        ID: {p.transactionId}
-                      </span>
+                      {/* Mobile Full ID & Copy Button */}
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <span className="font-mono text-[10px] font-bold text-[#151515] bg-[#F2EDE3] border border-[#151515] px-1.5 py-0.5 rounded break-all">
+                          {p.transactionId}
+                        </span>
+                        {p.transactionId && (
+                          <button
+                            type="button"
+                            onClick={() => handleCopyTxn(p.transactionId)}
+                            className="p-1 bg-white border border-[#151515] rounded cursor-pointer shrink-0"
+                            title="Copy ID"
+                          >
+                            {copiedId === p.transactionId ? (
+                              <Check className="w-3 h-3 text-[#16A34A]" />
+                            ) : (
+                              <Copy className="w-3 h-3 text-[#151515]" />
+                            )}
+                          </button>
+                        )}
+                      </div>
                       <h4 className="font-heading font-bold text-sm text-[#151515]">
                         {p.serviceTitle}
                       </h4>

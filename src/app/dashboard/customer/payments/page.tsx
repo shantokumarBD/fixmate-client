@@ -3,7 +3,7 @@ import { ROUTES } from "@/constants/routes";
 import { requireRole } from "@/lib/auth/session";
 import { getMyPayments } from "@/lib/api/payments";
 import { PaymentsTable } from "@/components/dashboard/PaymentsTable";
-import { CreditCard, CalendarCheck } from "lucide-react";
+import { CalendarCheck } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
