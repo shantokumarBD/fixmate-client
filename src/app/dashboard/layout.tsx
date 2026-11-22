@@ -8,6 +8,10 @@ import { DashboardShell } from "@/components/dashboard/DashboardShell";
 export const metadata: Metadata = {
   title: "Workbench Dashboard | FixMate",
   description: "Manage your smart device repair tickets, technician manifests, and payments.",
+  robots: {
+    index: false,
+    follow: false,
+  },
 };
 
 export default async function DashboardLayout({
