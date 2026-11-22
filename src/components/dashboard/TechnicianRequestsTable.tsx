@@ -40,11 +40,10 @@ export function TechnicianRequestsTable({ bookings }: TechnicianRequestsTablePro
   // Action states
   const [targetRejectBooking, setTargetRejectBooking] = useState<Booking | null>(null);
   const [targetCompleteBooking, setTargetCompleteBooking] = useState<Booking | null>(null);
-  const [finalAmountInput, setFinalAmountInput] = useState<number>(0);
+  const [finalAmountInput, setFinalAmountInput] = useState<string | number>("");
   const [inspectBooking, setInspectBooking] = useState<Booking | null>(null);
   const [processingId, setProcessingId] = useState<string | null>(null);
 
-  // ১. ট্যাব ফিল্টার কাউন্টার
   const tabs = [
     { id: "all" as TabType, label: "All Requests", count: bookings.length },
     {
@@ -74,7 +73,7 @@ export function TechnicianRequestsTable({ bookings }: TechnicianRequestsTablePro
     },
   ];
 
-  // ২. সার্চ ও ট্যাব ফিল্টারিং
+  
   const filteredBookings = bookings.filter((b) => {
     if (activeTab !== "all") {
       if (activeTab === "in-progress") {
@@ -98,7 +97,7 @@ export function TechnicianRequestsTable({ bookings }: TechnicianRequestsTablePro
     return true;
   });
 
-  // ৩. Challenge 3: Status Transition Actions
+  
   const handleTransition = (bookingId: string, nextStatus: string, amount?: number) => {
     setProcessingId(bookingId);
     startTransition(async () => {
@@ -107,6 +106,7 @@ export function TechnicianRequestsTable({ bookings }: TechnicianRequestsTablePro
         toast.success(res.message || `Work order updated to ${nextStatus}`);
         setTargetCompleteBooking(null);
         setTargetRejectBooking(null);
+        setInspectBooking(null);
         router.refresh();
       } else {
         toast.error(res.error || "Failed to update work order status");
@@ -115,21 +115,22 @@ export function TechnicianRequestsTable({ bookings }: TechnicianRequestsTablePro
     });
   };
 
-  // ৪. Complete Job Submission (Final Amount Check)
+  
   const handleConfirmCompletion = (e: React.FormEvent) => {
     e.preventDefault();
     if (!targetCompleteBooking) return;
 
-    if (!finalAmountInput || finalAmountInput <= 0) {
+    const numericAmount = Number(finalAmountInput);
+    if (!numericAmount || numericAmount <= 0 || isNaN(numericAmount)) {
       toast.error("Please enter a valid final repair settlement amount ($ > 0)");
       return;
     }
 
-    handleTransition(targetCompleteBooking._id, "completed", finalAmountInput);
+    handleTransition(targetCompleteBooking._id, "completed", numericAmount);
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       {/* Search Bar & Counter */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
         <div className="relative flex-1 max-w-md">
@@ -152,7 +153,7 @@ export function TechnicianRequestsTable({ bookings }: TechnicianRequestsTablePro
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+      <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
         {tabs.map((tab) => {
           const isActive = activeTab === tab.id;
           return (
@@ -195,45 +196,62 @@ export function TechnicianRequestsTable({ bookings }: TechnicianRequestsTablePro
             </p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
+          <div className="overflow-x-auto relative">
+            <table className="w-full text-left border-collapse min-w-[820px] lg:min-w-0">
               <thead>
-                <tr className="bg-[#FEF9EF] border-b-2 border-[#151515] font-mono text-xs text-[#151515] uppercase">
-                  <th className="py-3 px-4 font-bold tracking-wider">Ticket & Service</th>
-                  <th className="py-3 px-4 font-bold tracking-wider">Customer Contact</th>
-                  <th className="py-3 px-4 font-bold tracking-wider">Schedule</th>
-                  <th className="py-3 px-4 font-bold tracking-wider">Quote / Escrow</th>
-                  <th className="py-3 px-4 font-bold tracking-wider">Stage Status</th>
-                  <th className="py-3 px-4 font-bold tracking-wider text-right">Pipeline Action (Ch. 3)</th>
+                <tr className="bg-[#FEF9EF] border-b-2 border-[#151515] font-mono text-xs text-[#151515] uppercase tracking-wider">
+                  <th className="py-3 px-3 sm:px-4 font-extrabold sticky left-0 z-20 bg-[#FEF9EF] border-r-2 border-[#151515] shadow-[2px_0px_0px_#151515] min-w-[240px]">
+                    Ticket & Service
+                  </th>
+                  <th className="py-3 px-3.5 font-extrabold min-w-[170px]">
+                    Customer Contact
+                  </th>
+                  <th className="py-3 px-3.5 font-extrabold min-w-[150px]">
+                    Schedule
+                  </th>
+                  <th className="py-3 px-3.5 font-extrabold whitespace-nowrap">
+                    Quote / Escrow
+                  </th>
+                  <th className="py-3 px-3.5 font-extrabold whitespace-nowrap text-center">
+                    Stage Status
+                  </th>
+                  {/* Sufficient minimum width for stacked actions */}
+                  <th className="py-3 px-3.5 sm:px-4 font-extrabold text-right whitespace-nowrap min-w-[150px]">
+                    Pipeline Action
+                  </th>
                 </tr>
               </thead>
-              <tbody className="divide-y-2 divide-[#151515] font-sans text-xs sm:text-sm">
+              <tbody className="divide-y-2 divide-[#151515] font-sans">
                 {filteredBookings.map((b) => {
                   const isProcessing = processingId === b._id && isPending;
 
                   return (
-                    <tr key={b._id} className="hover:bg-[#FEF9EF]/50 transition-colors">
-                      {/* Ticket & Service */}
-                      <td className="py-3.5 px-4">
-                        <div className="flex flex-col min-w-0">
-                          <div className="flex items-center gap-1.5">
-                            <span className="font-mono text-[10px] font-bold bg-[#FEF9EF] border border-[#151515] px-1.5 py-0.2 rounded text-[#FF5B2E]">
+                    <tr key={b._id} className="group hover:bg-[#FEF9EF]/50 transition-colors">
+                      {/* Sticky Ticket & Service (Left 0) */}
+                      <td className="py-3 px-3 sm:px-4 sticky left-0 z-10 bg-white group-hover:bg-[#FEF9EF] border-r-2 border-[#151515] shadow-[2px_0px_0px_#151515] transition-colors">
+                        <div className="flex flex-col min-w-0 max-w-[220px] sm:max-w-[260px]">
+                          <div className="flex items-center gap-2">
+                            <span className="font-mono text-[11px] font-black bg-[#FEF9EF] border border-[#151515] px-1.5 py-0.5 rounded text-[#FF5B2E] shadow-[1px_1px_0px_#151515]">
                               #{b._id.slice(-6).toUpperCase()}
                             </span>
-                            <span className="font-heading font-bold text-[#151515] truncate max-w-xs">
+                            <span className="font-heading font-extrabold text-sm text-[#151515] truncate">
                               {b.serviceTitle}
                             </span>
                           </div>
-                          <div className="flex items-center gap-2 mt-1">
-                            <span className="font-mono text-[10px] uppercase font-bold text-[#5B403A] bg-[#F2EDE3] px-1.5 py-0.2 rounded">
+
+                          <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                            <span className="font-mono text-[10px] uppercase font-bold text-[#151515] bg-[#F2EDE3] border border-[#151515] px-1.5 py-0.2 rounded">
                               {b.category}
                             </span>
+
+                            {/* Highlighted Neobrutalist Problem Button */}
                             <button
                               type="button"
                               onClick={() => setInspectBooking(b)}
-                              className="text-[11px] font-mono text-[#2563EB] hover:underline flex items-center gap-0.5 cursor-pointer"
+                              className="inline-flex items-center gap-1 px-2 py-0.5 bg-[#FCD03D] hover:bg-[#FFE580] text-[#151515] border-2 border-[#151515] shadow-[1.5px_1.5px_0px_#151515] rounded-[4px] font-mono text-[11px] font-extrabold uppercase transition-all active:translate-x-0.5 active:translate-y-0.5 cursor-pointer"
+                              title="Inspect Problem Description"
                             >
-                              <FileText className="w-3 h-3" />
+                              <FileText className="w-3 h-3 text-[#151515]" />
                               <span>View Problem</span>
                             </button>
                           </div>
@@ -241,39 +259,42 @@ export function TechnicianRequestsTable({ bookings }: TechnicianRequestsTablePro
                       </td>
 
                       {/* Customer Contact */}
-                      <td className="py-3.5 px-4 whitespace-nowrap">
-                        <span className="font-bold text-[#151515] block">
+                      <td className="py-3 px-3.5">
+                        <span className="font-heading font-extrabold text-sm text-[#151515] block truncate max-w-[160px]">
                           {b.customerName}
                         </span>
                         <a
                           href={`tel:${b.customerPhone}`}
-                          className="font-mono text-[11px] text-[#2563EB] hover:underline flex items-center gap-1 mt-0.5"
+                          className="font-mono text-xs font-bold text-[#2563EB] hover:underline flex items-center gap-1.5 mt-0.5"
                         >
-                          <Phone className="w-3 h-3 text-[#5B403A]" />
+                          <Phone className="w-3.5 h-3.5 text-[#5B403A]" />
                           <span>{b.customerPhone}</span>
                         </a>
-                        <span className="font-mono text-[10px] text-[#5B403A] flex items-center gap-1 mt-0.5 max-w-[200px] truncate" title={b.address}>
-                          <MapPin className="w-3 h-3 shrink-0" />
-                          <span>{b.address}</span>
+                        <span
+                          className="font-mono text-[11px] text-[#5B403A] flex items-center gap-1.5 mt-0.5 max-w-[180px] truncate"
+                          title={b.address}
+                        >
+                          <MapPin className="w-3.5 h-3.5 shrink-0 text-[#5B403A]" />
+                          <span className="truncate">{b.address}</span>
                         </span>
                       </td>
 
                       {/* Schedule */}
-                      <td className="py-3.5 px-4 whitespace-nowrap">
-                        <div className="flex items-center gap-1.5 font-bold text-[#151515]">
-                          <Calendar className="w-3.5 h-3.5 text-[#5B403A]" />
+                      <td className="py-3 px-3.5">
+                        <div className="flex items-center gap-1.5 font-heading font-bold text-sm text-[#151515]">
+                          <Calendar className="w-3.5 h-3.5 text-[#5B403A] shrink-0" />
                           <span>{formatDate(b.preferredDate)}</span>
                         </div>
                         {b.timeSlot && (
-                          <span className="font-mono text-[10px] text-[#5B403A] block ml-5">
+                          <span className="font-mono text-xs text-[#5B403A] block ml-5 mt-0.5">
                             {b.timeSlot}
                           </span>
                         )}
                       </td>
 
                       {/* Quote & Payment */}
-                      <td className="py-3.5 px-4 whitespace-nowrap">
-                        <div className="font-mono font-black text-[#151515]">
+                      <td className="py-3 px-3.5 whitespace-nowrap">
+                        <div className="font-mono font-black text-base text-[#151515]">
                           {formatCurrency(b.finalAmount || b.basePrice || 0)}
                         </div>
                         <div className="mt-1">
@@ -282,24 +303,25 @@ export function TechnicianRequestsTable({ bookings }: TechnicianRequestsTablePro
                       </td>
 
                       {/* Status */}
-                      <td className="py-3.5 px-4 whitespace-nowrap">
+                      <td className="py-3 px-3.5 whitespace-nowrap text-center">
                         <StatusBadge status={b.status} />
                       </td>
 
-                      {/* Challenge 3: Status Transition Pipeline Actions */}
-                      <td className="py-3.5 px-4 whitespace-nowrap text-right">
+                      {/* Pipeline Actions (Clean & Non-Overflowing) */}
+                      <td className="py-3 px-3.5 sm:px-4 whitespace-nowrap text-right">
                         {isProcessing ? (
                           <div className="inline-flex items-center gap-1.5 font-mono text-xs text-[#FF5B2E] font-bold">
                             <Loader2 className="w-4 h-4 animate-spin" />
                             <span>Updating...</span>
                           </div>
                         ) : b.status === "requested" ? (
-                          <div className="inline-flex items-center gap-2">
+                          /* Vertically Stacked Up-Down Buttons */
+                          <div className="flex flex-col gap-1.5 items-end justify-center">
                             {/* Accept Button */}
                             <button
                               type="button"
                               onClick={() => handleTransition(b._id, "accepted")}
-                              className="px-2.5 py-1.5 bg-[#DCFCE7] text-[#16A34A] hover:bg-[#BBF7D0] border-2 border-[#151515] rounded-[6px] shadow-[2px_2px_0px_#151515] font-mono text-xs font-bold uppercase transition-all inline-flex items-center gap-1 cursor-pointer"
+                              className="w-[110px] py-1.5 bg-[#DCFCE7] text-[#16A34A] hover:bg-[#BBF7D0] border-2 border-[#151515] rounded-[5px] shadow-[2px_2px_0px_#151515] font-mono text-xs font-bold uppercase transition-all inline-flex items-center justify-center gap-1.5 cursor-pointer active:translate-x-0.5 active:translate-y-0.5"
                               title="Accept Job Order"
                             >
                               <CheckCircle2 className="w-3.5 h-3.5" />
@@ -310,7 +332,7 @@ export function TechnicianRequestsTable({ bookings }: TechnicianRequestsTablePro
                             <button
                               type="button"
                               onClick={() => setTargetRejectBooking(b)}
-                              className="px-2.5 py-1.5 bg-white text-[#DC2626] hover:bg-[#FEE2E2] border-2 border-[#151515] rounded-[6px] shadow-[2px_2px_0px_#151515] font-mono text-xs font-bold uppercase transition-all inline-flex items-center gap-1 cursor-pointer"
+                              className="w-[110px] py-1.5 bg-white text-[#DC2626] hover:bg-[#FEE2E2] border-2 border-[#151515] rounded-[5px] shadow-[2px_2px_0px_#151515] font-mono text-xs font-bold uppercase transition-all inline-flex items-center justify-center gap-1.5 cursor-pointer active:translate-x-0.5 active:translate-y-0.5"
                               title="Decline Job Order"
                             >
                               <XCircle className="w-3.5 h-3.5" />
@@ -318,32 +340,38 @@ export function TechnicianRequestsTable({ bookings }: TechnicianRequestsTablePro
                             </button>
                           </div>
                         ) : b.status === "accepted" ? (
-                          <button
-                            type="button"
-                            onClick={() => handleTransition(b._id, "in-progress")}
-                            className="px-3 py-1.5 bg-[#FEF3C7] text-[#B45309] hover:bg-[#FDE68A] border-2 border-[#151515] rounded-[6px] shadow-[2px_2px_0px_#151515] font-mono text-xs font-bold uppercase transition-all inline-flex items-center gap-1.5 cursor-pointer"
-                          >
-                            <Wrench className="w-3.5 h-3.5" />
-                            <span>Start Repair</span>
-                          </button>
+                          <div className="flex flex-col gap-1.5 items-end justify-center">
+                            <button
+                              type="button"
+                              onClick={() => handleTransition(b._id, "in-progress")}
+                              className="w-[135px] py-1.5 bg-[#FEF3C7] text-[#B45309] hover:bg-[#FDE68A] border-2 border-[#151515] rounded-[5px] shadow-[2px_2px_0px_#151515] font-mono text-xs font-bold uppercase transition-all inline-flex items-center justify-center gap-1.5 cursor-pointer active:translate-x-0.5 active:translate-y-0.5"
+                            >
+                              <Wrench className="w-3.5 h-3.5" />
+                              <span>Start Repair</span>
+                            </button>
+                          </div>
                         ) : ["in-progress", "in_progress"].includes(b.status) ? (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setTargetCompleteBooking(b);
-                              setFinalAmountInput(b.finalAmount || b.basePrice || 35);
-                            }}
-                            className="px-3 py-1.5 bg-[#FF5B2E] text-white hover:bg-[#B22B00] border-2 border-[#151515] rounded-[6px] shadow-[2px_2px_0px_#000000] font-heading font-bold text-xs uppercase tracking-wider transition-all inline-flex items-center gap-1.5 cursor-pointer"
-                          >
-                            <Sparkles className="w-3.5 h-3.5" />
-                            <span>Complete Job</span>
-                          </button>
+                          <div className="flex flex-col gap-1.5 items-end justify-center">
+                            {/* Complete Job Button (w-[135px] eliminates overflow) */}
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setTargetCompleteBooking(b);
+                                // Prefills directly as string so no leading 0 occurs
+                                setFinalAmountInput(String(b.finalAmount || b.basePrice || ""));
+                              }}
+                              className="w-[135px] py-1.5 bg-[#FF5B2E] text-white hover:bg-[#B22B00] border-2 border-[#151515] rounded-[5px] shadow-[2px_2px_0px_#000000] font-heading font-bold text-xs uppercase tracking-normal transition-all inline-flex items-center justify-center gap-1.5 cursor-pointer active:translate-x-0.5 active:translate-y-0.5"
+                            >
+                              <Sparkles className="w-3.5 h-3.5 shrink-0" />
+                              <span>Complete Job</span>
+                            </button>
+                          </div>
                         ) : b.status === "completed" ? (
-                          <span className="font-mono text-xs font-bold text-[#16A34A] bg-[#DCFCE7] border border-[#151515] px-2 py-1 rounded-[4px]">
+                          <span className="w-[110px] text-center font-mono text-xs font-bold text-[#16A34A] bg-[#DCFCE7] border-2 border-[#151515] py-1 rounded-[5px] shadow-[1px_1px_0px_#151515] inline-block">
                             ✓ Finished
                           </span>
                         ) : (
-                          <span className="font-mono text-xs text-[#5B403A]">
+                          <span className="w-[110px] text-center font-mono text-xs font-bold text-[#5B403A] bg-[#F2EDE3] border border-[#151515] py-1 rounded-[5px] inline-block">
                             Closed
                           </span>
                         )}
@@ -393,10 +421,21 @@ export function TechnicianRequestsTable({ bookings }: TechnicianRequestsTablePro
                   <input
                     type="number"
                     min="1"
-                    step="1"
+                    step="any"
                     required
                     value={finalAmountInput}
-                    onChange={(e) => setFinalAmountInput(Number(e.target.value))}
+                    // Auto-select on focus so typing replaces the number without backspacing
+                    onFocus={(e) => e.target.select()}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      // Remove accidental leading zeroes (e.g. "030" -> "30")
+                      if (val.length > 1 && val.startsWith("0") && !val.startsWith("0.")) {
+                        setFinalAmountInput(val.replace(/^0+/, ""));
+                      } else {
+                        setFinalAmountInput(val);
+                      }
+                    }}
+                    placeholder="Enter final amount"
                     className="w-full pl-9 pr-4 py-2 bg-white border-2 border-[#151515] rounded-[6px] font-mono text-sm font-bold text-[#151515] focus:outline-none focus:ring-2 focus:ring-[#FF5B2E]"
                   />
                 </div>
@@ -429,57 +468,112 @@ export function TechnicianRequestsTable({ bookings }: TechnicianRequestsTablePro
 
       {/* ================= MODAL 2: INSPECT PROBLEM DETAILS ================= */}
       {inspectBooking && (
-        <div className="fixed inset-0 z-50 bg-[#151515]/70 flex items-center justify-center p-4 backdrop-blur-xs">
-          <div className="bg-white border-2 border-[#151515] rounded-[10px] shadow-[6px_6px_0px_#151515] w-full max-w-lg p-6 space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b-2 border-[#151515]">
+        <div className="fixed inset-0 z-50 bg-[#151515]/70 flex items-center justify-center p-3 sm:p-4 backdrop-blur-xs overflow-y-auto">
+          <div className="bg-white border-2 border-[#151515] rounded-[10px] shadow-[8px_8px_0px_#151515] w-full max-w-lg my-8 overflow-hidden flex flex-col">
+            <div className="p-4 sm:p-5 border-b-2 border-[#151515] bg-[#FEF9EF] flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className="bg-[#FCD03D] border-2 border-[#151515] px-2 py-0.5 text-[11px] font-mono font-bold uppercase">
+                <span className="bg-[#FCD03D] border-2 border-[#151515] px-2 py-0.5 text-[11px] font-mono font-bold uppercase shadow-[1px_1px_0px_#151515]">
                   TICKET #{inspectBooking._id.slice(-6).toUpperCase()}
                 </span>
-                <h3 className="font-heading font-bold text-base text-[#151515] truncate max-w-xs">
+                <h3 className="font-heading font-extrabold text-base text-[#151515] truncate max-w-xs">
                   {inspectBooking.serviceTitle}
                 </h3>
               </div>
               <button
                 type="button"
                 onClick={() => setInspectBooking(null)}
-                className="p-1 hover:bg-[#FEF9EF] rounded border border-transparent hover:border-[#151515] cursor-pointer"
+                className="p-1 hover:bg-white rounded border border-transparent hover:border-[#151515] cursor-pointer"
               >
-                <X className="w-5 h-5" />
+                <X className="w-5 h-5 text-[#151515]" />
               </button>
             </div>
 
-            <div className="space-y-3 font-sans text-xs">
+            <div className="p-4 sm:p-6 space-y-4">
+              {/* Problem Description */}
               <div>
-                <span className="font-mono text-[10px] uppercase font-bold text-[#5B403A] block mb-1">
-                  Customer Problem Description:
+                <span className="font-mono text-[11px] uppercase font-bold text-[#5B403A] block mb-1.5">
+                  Customer Diagnostic Problem Description:
                 </span>
-                <div className="p-3 bg-[#FEF9EF] border-2 border-[#151515] rounded-[6px] text-[#151515] leading-relaxed whitespace-pre-wrap font-sans">
+                <div className="p-3.5 bg-[#FEF9EF] border-2 border-[#151515] rounded-[6px] text-xs sm:text-sm text-[#151515] leading-relaxed whitespace-pre-wrap font-sans">
                   {inspectBooking.problemDescription}
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3 pt-2">
-                <div className="p-2.5 bg-white border border-[#151515] rounded">
-                  <span className="font-mono text-[10px] text-[#5B403A] block">Customer</span>
-                  <span className="font-bold text-[#151515]">{inspectBooking.customerName}</span>
-                  <span className="font-mono text-[11px] text-[#2563EB] block">{inspectBooking.customerPhone}</span>
+              {/* Customer Info Card */}
+              <div className="grid grid-cols-2 gap-3 pt-1">
+                <div className="p-3 bg-white border-2 border-[#151515] rounded-[6px]">
+                  <span className="font-mono text-[10px] text-[#5B403A] font-bold block uppercase">
+                    Customer Contact
+                  </span>
+                  <span className="font-heading font-bold text-sm text-[#151515] block mt-0.5">
+                    {inspectBooking.customerName}
+                  </span>
+                  <a
+                    href={`tel:${inspectBooking.customerPhone}`}
+                    className="font-mono text-xs text-[#2563EB] hover:underline block mt-0.5"
+                  >
+                    {inspectBooking.customerPhone}
+                  </a>
                 </div>
-                <div className="p-2.5 bg-white border border-[#151515] rounded">
-                  <span className="font-mono text-[10px] text-[#5B403A] block">Address</span>
-                  <span className="font-bold text-[#151515] text-[11px]">{inspectBooking.address}</span>
+
+                <div className="p-3 bg-white border-2 border-[#151515] rounded-[6px]">
+                  <span className="font-mono text-[10px] text-[#5B403A] font-bold block uppercase">
+                    Repair Address
+                  </span>
+                  <span className="font-sans font-bold text-xs text-[#151515] block mt-0.5 line-clamp-2">
+                    {inspectBooking.address}
+                  </span>
                 </div>
+              </div>
+
+              {/* Schedule and Quote */}
+              <div className="p-3 bg-[#FEF9EF] border-2 border-[#151515] rounded-[6px] flex items-center justify-between font-mono text-xs">
+                <span>
+                  Schedule: <strong>{formatDate(inspectBooking.preferredDate)}</strong> {inspectBooking.timeSlot && `(${inspectBooking.timeSlot})`}
+                </span>
+                <span className="font-black text-[#151515]">
+                  Quote: {formatCurrency(inspectBooking.finalAmount || inspectBooking.basePrice || 0)}
+                </span>
               </div>
             </div>
 
-            <div className="pt-2 text-right">
+            {/* Modal Footer with Actions */}
+            <div className="p-4 sm:p-5 border-t-2 border-[#151515] bg-[#FEF9EF] flex items-center justify-between gap-3">
               <button
                 type="button"
                 onClick={() => setInspectBooking(null)}
-                className="px-4 py-2 bg-[#151515] text-white border-2 border-[#151515] rounded-[6px] font-mono text-xs font-bold uppercase cursor-pointer"
+                className="px-4 py-2 bg-white text-[#151515] hover:bg-[#F2EDE3] border-2 border-[#151515] rounded-[6px] font-mono text-xs font-bold uppercase transition-all shadow-[2px_2px_0px_#151515] cursor-pointer"
               >
-                Close Details
+                Close
               </button>
+
+              {inspectBooking.status === "requested" && (
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const b = inspectBooking;
+                      setInspectBooking(null);
+                      setTargetRejectBooking(b);
+                    }}
+                    className="px-3 py-2 bg-white text-[#DC2626] hover:bg-[#FEE2E2] border-2 border-[#151515] rounded-[6px] font-mono text-xs font-bold uppercase transition-all shadow-[2px_2px_0px_#151515] cursor-pointer inline-flex items-center gap-1"
+                  >
+                    <XCircle className="w-3.5 h-3.5" />
+                    <span>Decline</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleTransition(inspectBooking._id, "accepted");
+                    }}
+                    className="px-4 py-2 bg-[#10B981] text-white hover:bg-[#059669] border-2 border-[#151515] rounded-[6px] font-heading font-bold text-xs uppercase tracking-wider transition-all shadow-[2px_2px_0px_#000000] cursor-pointer inline-flex items-center gap-1.5"
+                  >
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    <span>Accept Job</span>
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>

@@ -3,7 +3,7 @@ import { ROUTES } from "@/constants/routes";
 import { requireRole } from "@/lib/auth/session";
 import { getTechnicianBookings } from "@/lib/api/technician";
 import { TechnicianRequestsTable } from "@/components/dashboard/TechnicianRequestsTable";
-import { ArrowLeft, RefreshCw } from "lucide-react";
+import { ArrowLeft} from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
