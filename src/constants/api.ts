@@ -56,7 +56,7 @@ export const API_ENDPOINTS = {
 
   // User Profile
   USERS: {
-    GET_PROFILE: `${API_BASE_URL}/api/users/profile`,
+    GET_PROFILE: `${API_BASE_URL}/api/users/me`,
     PATCH_PROFILE: `${API_BASE_URL}/api/users/profile`,
   },
 } as const;
