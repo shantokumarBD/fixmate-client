@@ -11,9 +11,15 @@ import { signInSchema } from "@/validations/auth";
 import { Button } from "@/components/ui/button";
 
 export function SignInForm() {
+  
   const router = useRouter();
+
   const searchParams = useSearchParams();
-  const redirectParam = searchParams.get("redirect") || searchParams.get("callbackUrl");
+
+  const redirectParam =
+    searchParams.get("redirect") ||
+    searchParams.get("callbackUrl") ||
+    searchParams.get("returnUrl");
 
   const formRef = useRef<HTMLFormElement>(null);
   const [showPassword, setShowPassword] = useState(false);
@@ -31,7 +37,7 @@ export function SignInForm() {
         emailInput.value = "customer@fixmate.com";
         passwordInput.value = "Pass1234";
       } else if (role === "technician") {
-        emailInput.value = "technician@fixmate.com";
+        emailInput.value = "rahim.tech@fixmate.com";
         passwordInput.value = "Pass1234";
       } else {
         emailInput.value = "admin@fixmate.com";

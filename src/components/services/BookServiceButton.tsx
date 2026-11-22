@@ -24,7 +24,7 @@ export function BookServiceButton({ service }: BookServiceButtonProps) {
     setRoleWarning("");
 
     if (!session?.user) {
-      router.push(`${ROUTES.SIGN_IN}?returnUrl=/services/${service._id}`);
+      router.push(`${ROUTES.SIGN_IN}?callbackUrl=/services/${service._id}`);
       return;
     }
 

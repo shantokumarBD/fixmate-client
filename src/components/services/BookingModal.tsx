@@ -48,23 +48,31 @@ export function BookingModal({
 
     // 1. Minimum 20 characters rule
     if (problemDescription.length < 20) {
-      setErrorMessage("Problem description must be at least 20 characters long.");
+      const msg = "Problem description must be at least 20 characters long.";
+      setErrorMessage(msg);
+      toast.error(msg);
       return;
     }
 
     // 2. Validate required fields
     if (!preferredDate) {
-      setErrorMessage("Preferred date is required.");
+      const msg = "Preferred date is required.";
+      setErrorMessage(msg);
+      toast.error(msg);
       return;
     }
 
     if (!phone) {
-      setErrorMessage("Valid contact phone number is required.");
+      const msg = "Valid contact phone number is required.";
+      setErrorMessage(msg);
+      toast.error(msg);
       return;
     }
 
     if (!address) {
-      setErrorMessage("Service location/address is required.");
+      const msg = "Service location/address is required.";
+      setErrorMessage(msg);
+      toast.error(msg);
       return;
     }
 
@@ -81,7 +89,9 @@ export function BookingModal({
       });
 
       if (!result.success) {
-        setErrorMessage(result.error || "Failed to submit request.");
+        const errorMsg = result.error || "Failed to submit request.";
+        setErrorMessage(errorMsg);
+        toast.error(errorMsg);
         setLoading(false);
         return;
       }
@@ -90,7 +100,9 @@ export function BookingModal({
       onClose();
       router.push(ROUTES.CUSTOMER.BOOKINGS);
     } catch {
-      setErrorMessage("Unexpected error occurred. Please try again.");
+      const errorMsg = "Unexpected error occurred. Please try again.";
+      setErrorMessage(errorMsg);
+      toast.error(errorMsg);
       setLoading(false);
     }
   };
