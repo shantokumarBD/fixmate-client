@@ -13,7 +13,7 @@ export async function getFeaturedServices(limit: number = 6): Promise<Service[]>
     if (!res.ok) return [];
     const data = await res.json();
     return Array.isArray(data) ? data : [];
-  } catch (error) {
+  } catch {
     return [];
   }
 }
@@ -36,7 +36,7 @@ export async function getCategoryCounts(): Promise<Record<string, number>> {
       });
     }
     return counts;
-  } catch (error) {
+  } catch {
     return {};
   }
 }

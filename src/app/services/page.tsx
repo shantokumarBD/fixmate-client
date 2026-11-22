@@ -1,10 +1,17 @@
-import React, { Suspense } from "react";
+import { Suspense } from "react";
 import Link from "next/link";
 import { Wrench, RotateCcw, X } from "lucide-react";
 import { fetchFilteredServices, getCategoryCounts } from "@/lib/api/services";
 import { ServiceCard } from "@/components/shared/ServiceCard";
 import { ServiceSidebar } from "@/components/services/ServiceSidebar";
 import { ROUTES } from "@/constants/routes";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Explore Verified Repair Services | FixMate",
+  description:
+    "Browse certified workshop job manifests. Upfront flat-rate pricing, 90-day warranty, and pay-after-service model.",
+};
 
 interface ServicesPageProps {
   searchParams: Promise<{
