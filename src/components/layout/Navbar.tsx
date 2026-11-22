@@ -20,7 +20,11 @@ export function Navbar() {
   const { data: session, isPending } = useSession();
   const user = session?.user;
 
-  if (pathname?.startsWith("/dashboard")) {
+  if (
+    pathname?.startsWith("/dashboard") ||
+    pathname === "/sign-in" ||
+    pathname === "/sign-up"
+  ) {
     return null;
   }
 

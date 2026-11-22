@@ -10,7 +10,11 @@ import { SERVICE_CATEGORIES } from "@/constants/roles";
 export function Footer() {
   const pathname = usePathname();
 
-  if (pathname?.startsWith("/dashboard")) {
+  if (
+    pathname?.startsWith("/dashboard") ||
+    pathname === "/sign-in" ||
+    pathname === "/sign-up"
+  ) {
     return null;
   }
 
