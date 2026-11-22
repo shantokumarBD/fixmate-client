@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
@@ -8,6 +8,7 @@ import { Service } from "@/types/service";
 import { updateServiceApprovalAction } from "@/actions/admin";
 import { ApprovalBadge } from "@/components/shared/ApprovalBadge";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
+import { ServiceInspectModal } from "@/components/dashboard/ServiceInspectModal";
 import { formatCurrency } from "@/lib/utils";
 import {
   Search,
@@ -19,9 +20,6 @@ import {
   Inbox,
   RotateCcw,
   Loader2,
-  X,
-  ShieldCheck,
-  ExternalLink,
 } from "lucide-react";
 
 interface AdminServicesTableProps {
@@ -104,7 +102,7 @@ export function AdminServicesTable({ services }: AdminServicesTableProps) {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       {/* Search Bar & Counter */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
         <div className="relative flex-1 max-w-md">
@@ -126,8 +124,8 @@ export function AdminServicesTable({ services }: AdminServicesTableProps) {
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+      {/* Filter Tabs */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
         {tabs.map((tab) => {
           const isActive = activeTab === tab.id;
           const isPendingTab = tab.id === "pending" && tab.count > 0;
@@ -175,43 +173,43 @@ export function AdminServicesTable({ services }: AdminServicesTableProps) {
             </p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
+          <div className="overflow-x-auto relative">
+            <table className="w-full text-left border-collapse min-w-[800px] lg:min-w-0">
               <thead>
-                <tr className="bg-[#FEF9EF] border-b-2 border-[#151515] font-mono text-xs text-[#151515] uppercase">
-                  <th className="py-3 px-4 font-bold tracking-wider">
+                <tr className="bg-[#FEF9EF] border-b-2 border-[#151515] font-mono text-xs text-[#151515] uppercase tracking-wider">
+                  <th className="py-3 px-3 sm:px-4 font-extrabold sticky left-0 z-20 bg-[#FEF9EF] border-r-2 border-[#151515] shadow-[2px_0px_0px_#151515] min-w-[240px]">
                     Service Offering
                   </th>
-                  <th className="py-3 px-4 font-bold tracking-wider">
+                  <th className="py-3 px-3.5 font-extrabold min-w-[160px]">
                     Technician
                   </th>
-                  <th className="py-3 px-4 font-bold tracking-wider">
+                  <th className="py-3 px-3.5 font-extrabold min-w-[160px]">
                     Mode & Duration
                   </th>
-                  <th className="py-3 px-4 font-bold tracking-wider">
+                  <th className="py-3 px-3.5 font-extrabold whitespace-nowrap">
                     Base Quote
                   </th>
-                  <th className="py-3 px-4 font-bold tracking-wider">
+                  <th className="py-3 px-3.5 font-extrabold whitespace-nowrap text-center">
                     Approval Status
                   </th>
-                  <th className="py-3 px-4 font-bold tracking-wider text-right">
+                  <th className="py-3 px-3.5 sm:px-4 font-extrabold text-right whitespace-nowrap min-w-[120px]">
                     Moderation Action
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y-2 divide-[#151515] font-sans text-xs sm:text-sm">
+              <tbody className="divide-y-2 divide-[#151515] font-sans">
                 {filteredServices.map((s) => {
                   const isProcessing = processingId === s._id && isPending;
 
                   return (
                     <tr
                       key={s._id}
-                      className="hover:bg-[#FEF9EF]/50 transition-colors"
+                      className="group hover:bg-[#FEF9EF]/50 transition-colors"
                     >
-                      {/* Service Thumbnail & Title */}
-                      <td className="py-3.5 px-4">
+                      {/* Sticky Service Thumbnail & Title (Left 0) */}
+                      <td className="py-3 px-3 sm:px-4 sticky left-0 z-10 bg-white group-hover:bg-[#FEF9EF] border-r-2 border-[#151515] shadow-[2px_0px_0px_#151515] transition-colors">
                         <div className="flex items-center gap-3">
-                          <div className="w-12 h-12 bg-[#DEDAD0] border-2 border-[#151515] rounded-[6px] relative overflow-hidden shrink-0">
+                          <div className="w-12 h-12 bg-[#DEDAD0] border-2 border-[#151515] rounded-[6px] relative overflow-hidden shrink-0 shadow-[2px_2px_0px_#151515]">
                             <Image
                               src={
                                 s.image ||
@@ -223,21 +221,24 @@ export function AdminServicesTable({ services }: AdminServicesTableProps) {
                               className="object-cover"
                             />
                           </div>
-                          <div className="flex flex-col min-w-0">
-                            <span className="font-heading font-bold text-[#151515] leading-tight truncate max-w-xs">
+                          <div className="flex flex-col min-w-0 max-w-[200px] sm:max-w-[250px]">
+                            <span className="font-heading font-extrabold text-sm text-[#151515] leading-snug line-clamp-2">
                               {s.title}
                             </span>
-                            <div className="flex items-center gap-2 mt-1">
+                            <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                               <span className="font-mono text-[10px] font-bold bg-[#F2EDE3] border border-[#151515] px-1.5 py-0.2 rounded uppercase text-[#151515]">
                                 {s.category}
                               </span>
+
+                              {/* Highlighted Neobrutalist Inspect Button */}
                               <button
                                 type="button"
                                 onClick={() => setInspectService(s)}
-                                className="text-[11px] font-mono text-[#2563EB] hover:underline flex items-center gap-0.5 cursor-pointer"
+                                className="inline-flex items-center gap-1 px-2 py-0.5 bg-[#FCD03D] hover:bg-[#FFE580] text-[#151515] border-2 border-[#151515] shadow-[1.5px_1.5px_0px_#151515] rounded-[4px] font-mono text-[11px] font-extrabold uppercase transition-all active:translate-x-0.5 active:translate-y-0.5 cursor-pointer"
+                                title="Inspect Complete Service Diagnostics"
                               >
-                                <FileText className="w-3 h-3" />
-                                <span>Inspect Scope</span>
+                                <FileText className="w-3 h-3 text-[#151515]" />
+                                <span>Inspect Full</span>
                               </button>
                             </div>
                           </div>
@@ -245,20 +246,20 @@ export function AdminServicesTable({ services }: AdminServicesTableProps) {
                       </td>
 
                       {/* Technician */}
-                      <td className="py-3.5 px-4 whitespace-nowrap">
-                        <span className="font-bold text-[#151515] block">
+                      <td className="py-3 px-3.5">
+                        <span className="font-heading font-extrabold text-sm text-[#151515] block truncate max-w-[150px]">
                           {s.technicianName || "Technician"}
                         </span>
-                        <span className="font-mono text-[11px] text-[#5B403A] block">
+                        <span className="font-mono text-xs text-[#5B403A] block truncate max-w-[150px] mt-0.5">
                           {s.technicianEmail}
                         </span>
                         <span
-                          className={`inline-flex items-center gap-1 font-mono text-[10px] mt-0.5 ${
+                          className={`inline-flex items-center gap-1 font-mono text-[10px] font-bold mt-1 ${
                             s.isAvailable ? "text-[#16A34A]" : "text-[#6B7280]"
                           }`}
                         >
                           <span
-                            className={`w-1.5 h-1.5 rounded-full ${
+                            className={`w-2 h-2 rounded-full ${
                               s.isAvailable ? "bg-[#16A34A]" : "bg-[#6B7280]"
                             }`}
                           ></span>
@@ -267,42 +268,43 @@ export function AdminServicesTable({ services }: AdminServicesTableProps) {
                       </td>
 
                       {/* Mode & Duration */}
-                      <td className="py-3.5 px-4 whitespace-nowrap">
-                        <span className="font-bold text-[#151515] block">
+                      <td className="py-3 px-3.5">
+                        <span className="font-heading font-extrabold text-sm text-[#151515] block">
                           {s.serviceMode}
                         </span>
-                        <span className="font-mono text-[11px] text-[#5B403A] flex items-center gap-1 mt-0.5">
-                          <Clock className="w-3 h-3 text-[#5B403A]" />
-                          {s.estimatedDuration}
+                        <span className="font-mono text-xs text-[#5B403A] flex items-center gap-1.5 mt-1">
+                          <Clock className="w-3.5 h-3.5 text-[#5B403A] shrink-0" />
+                          <span>{s.estimatedDuration}</span>
                         </span>
                         <span
-                          className="font-mono text-[10px] text-[#5B403A] flex items-center gap-1 mt-0.5 max-w-[180px] truncate"
+                          className="font-mono text-[11px] text-[#5B403A] flex items-center gap-1 mt-1 max-w-[160px] truncate"
                           title={s.serviceArea}
                         >
-                          <MapPin className="w-3 h-3 shrink-0" />
-                          {s.serviceArea}
+                          <MapPin className="w-3.5 h-3.5 shrink-0" />
+                          <span className="truncate">{s.serviceArea}</span>
                         </span>
                       </td>
 
                       {/* Base Price */}
-                      <td className="py-3.5 px-4 whitespace-nowrap font-mono font-extrabold text-[#151515]">
+                      <td className="py-3 px-3.5 whitespace-nowrap font-mono font-black text-base text-[#151515]">
                         {formatCurrency(s.basePrice || 0)}
                       </td>
 
                       {/* Approval Status Badge */}
-                      <td className="py-3.5 px-4 whitespace-nowrap">
+                      <td className="py-3 px-3.5 whitespace-nowrap text-center">
                         <ApprovalBadge status={s.approvalStatus} />
                       </td>
 
-                      {/* Moderation Actions */}
-                      <td className="py-3.5 px-4 whitespace-nowrap text-right">
+                      {/* Moderation Actions (Stacked UP-DOWN) */}
+                      <td className="py-3 px-3.5 sm:px-4 whitespace-nowrap text-right">
                         {isProcessing ? (
                           <div className="inline-flex items-center gap-1.5 font-mono text-xs text-[#FF5B2E] font-bold">
                             <Loader2 className="w-4 h-4 animate-spin" />
                             <span>Updating...</span>
                           </div>
                         ) : s.approvalStatus === "pending" ? (
-                          <div className="inline-flex items-center gap-2">
+                          /* Vertically Stacked Up-Down Buttons */
+                          <div className="flex flex-col gap-1.5 items-end justify-center">
                             {/* Approve Button */}
                             <button
                               type="button"
@@ -312,7 +314,7 @@ export function AdminServicesTable({ services }: AdminServicesTableProps) {
                                   nextStatus: "approved",
                                 })
                               }
-                              className="px-2.5 py-1.5 bg-[#DCFCE7] text-[#16A34A] hover:bg-[#BBF7D0] border-2 border-[#151515] rounded-[6px] shadow-[2px_2px_0px_#151515] font-mono text-xs font-bold uppercase transition-all inline-flex items-center gap-1 cursor-pointer"
+                              className="w-24 py-1.5 bg-[#DCFCE7] text-[#16A34A] hover:bg-[#BBF7D0] border-2 border-[#151515] rounded-[5px] shadow-[2px_2px_0px_#151515] font-mono text-xs font-bold uppercase transition-all inline-flex items-center justify-center gap-1.5 cursor-pointer active:translate-x-0.5 active:translate-y-0.5"
                               title="Approve Service Listing"
                             >
                               <CheckCircle2 className="w-3.5 h-3.5" />
@@ -328,7 +330,7 @@ export function AdminServicesTable({ services }: AdminServicesTableProps) {
                                   nextStatus: "rejected",
                                 })
                               }
-                              className="px-2.5 py-1.5 bg-white text-[#DC2626] hover:bg-[#FEE2E2] border-2 border-[#151515] rounded-[6px] shadow-[2px_2px_0px_#151515] font-mono text-xs font-bold uppercase transition-all inline-flex items-center gap-1 cursor-pointer"
+                              className="w-24 py-1.5 bg-white text-[#DC2626] hover:bg-[#FEE2E2] border-2 border-[#151515] rounded-[5px] shadow-[2px_2px_0px_#151515] font-mono text-xs font-bold uppercase transition-all inline-flex items-center justify-center gap-1.5 cursor-pointer active:translate-x-0.5 active:translate-y-0.5"
                               title="Reject Service Listing"
                             >
                               <XCircle className="w-3.5 h-3.5" />
@@ -336,35 +338,39 @@ export function AdminServicesTable({ services }: AdminServicesTableProps) {
                             </button>
                           </div>
                         ) : s.approvalStatus === "approved" ? (
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setTargetAction({
-                                service: s,
-                                nextStatus: "rejected",
-                              })
-                            }
-                            className="px-2.5 py-1.5 bg-white text-[#DC2626] hover:bg-[#FEE2E2] border-2 border-[#151515] rounded-[6px] shadow-[2px_2px_0px_#151515] font-mono text-xs font-bold uppercase transition-all inline-flex items-center gap-1 cursor-pointer"
-                            title="Revoke / Reject Service"
-                          >
-                            <XCircle className="w-3.5 h-3.5" />
-                            <span>Revoke</span>
-                          </button>
+                          <div className="flex flex-col gap-1.5 items-end justify-center">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setTargetAction({
+                                  service: s,
+                                  nextStatus: "rejected",
+                                })
+                              }
+                              className="w-24 py-1.5 bg-white text-[#DC2626] hover:bg-[#FEE2E2] border-2 border-[#151515] rounded-[5px] shadow-[2px_2px_0px_#151515] font-mono text-xs font-bold uppercase transition-all inline-flex items-center justify-center gap-1.5 cursor-pointer active:translate-x-0.5 active:translate-y-0.5"
+                              title="Revoke / Reject Service"
+                            >
+                              <XCircle className="w-3.5 h-3.5" />
+                              <span>Revoke</span>
+                            </button>
+                          </div>
                         ) : (
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setTargetAction({
-                                service: s,
-                                nextStatus: "approved",
-                              })
-                            }
-                            className="px-2.5 py-1.5 bg-[#FEF9EF] text-[#16A34A] hover:bg-[#DCFCE7] border-2 border-[#151515] rounded-[6px] shadow-[2px_2px_0px_#151515] font-mono text-xs font-bold uppercase transition-all inline-flex items-center gap-1 cursor-pointer"
-                            title="Re-Approve Service"
-                          >
-                            <RotateCcw className="w-3.5 h-3.5" />
-                            <span>Re-Approve</span>
-                          </button>
+                          <div className="flex flex-col gap-1.5 items-end justify-center">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setTargetAction({
+                                  service: s,
+                                  nextStatus: "approved",
+                                })
+                              }
+                              className="w-28 py-1.5 bg-[#FEF9EF] text-[#16A34A] hover:bg-[#DCFCE7] border-2 border-[#151515] rounded-[5px] shadow-[2px_2px_0px_#151515] font-mono text-xs font-bold uppercase transition-all inline-flex items-center justify-center gap-1.5 cursor-pointer active:translate-x-0.5 active:translate-y-0.5"
+                              title="Re-Approve Service"
+                            >
+                              <RotateCcw className="w-3.5 h-3.5" />
+                              <span>Re-Approve</span>
+                            </button>
+                          </div>
                         )}
                       </td>
                     </tr>
@@ -376,79 +382,15 @@ export function AdminServicesTable({ services }: AdminServicesTableProps) {
         )}
       </div>
 
-      {/* ================= MODAL: INSPECT SERVICE SCOPE ================= */}
-      {inspectService && (
-        <div className="fixed inset-0 z-50 bg-[#151515]/70 flex items-center justify-center p-4 backdrop-blur-xs">
-          <div className="bg-white border-2 border-[#151515] rounded-[10px] shadow-[6px_6px_0px_#151515] w-full max-w-lg p-6 space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b-2 border-[#151515]">
-              <div className="flex items-center gap-2">
-                <span className="bg-[#FCD03D] border-2 border-[#151515] px-2 py-0.5 text-[11px] font-mono font-bold uppercase">
-                  {inspectService.category}
-                </span>
-                <h3 className="font-heading font-extrabold text-base text-[#151515] truncate max-w-xs">
-                  {inspectService.title}
-                </h3>
-              </div>
-              <button
-                type="button"
-                onClick={() => setInspectService(null)}
-                className="p-1 hover:bg-[#FEF9EF] rounded border border-transparent hover:border-[#151515] cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="space-y-3 font-sans text-xs">
-              <div>
-                <span className="font-mono text-[10px] uppercase font-bold text-[#5B403A] block mb-1">
-                  Technical Problem Scope & Diagnosis Description:
-                </span>
-                <div className="p-3 bg-[#FEF9EF] border-2 border-[#151515] rounded-[6px] text-[#151515] leading-relaxed whitespace-pre-wrap font-sans">
-                  {inspectService.description}
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3 pt-1">
-                <div className="p-2.5 bg-white border border-[#151515] rounded">
-                  <span className="font-mono text-[10px] text-[#5B403A] block">
-                    Technician
-                  </span>
-                  <span className="font-bold text-[#151515]">
-                    {inspectService.technicianName}
-                  </span>
-                  <span className="font-mono text-[11px] text-[#5B403A] block">
-                    {inspectService.technicianEmail}
-                  </span>
-                </div>
-                <div className="p-2.5 bg-white border border-[#151515] rounded">
-                  <span className="font-mono text-[10px] text-[#5B403A] block">
-                    Coverage & Dispatch
-                  </span>
-                  <span className="font-bold text-[#151515]">
-                    {inspectService.serviceMode}
-                  </span>
-                  <span className="font-mono text-[11px] text-[#5B403A] block">
-                    {inspectService.serviceArea}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <div className="pt-2 flex items-center justify-between border-t-2 border-[#151515]">
-              <span className="font-mono text-xs font-bold text-[#151515]">
-                Base Quote: {formatCurrency(inspectService.basePrice || 0)}
-              </span>
-              <button
-                type="button"
-                onClick={() => setInspectService(null)}
-                className="px-4 py-2 bg-[#151515] text-white border-2 border-[#151515] rounded-[6px] font-mono text-xs font-bold uppercase cursor-pointer"
-              >
-                Close Details
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* ================= MODULAR INSPECT MODAL ================= */}
+      <ServiceInspectModal
+        service={inspectService}
+        onClose={() => setInspectService(null)}
+        onAction={(service, nextStatus) => {
+          setInspectService(null);
+          setTargetAction({ service, nextStatus });
+        }}
+      />
 
       {/* ================= MODERATION CONFIRMATION DIALOG ================= */}
       <ConfirmDialog

@@ -3,7 +3,7 @@ import { ROUTES } from "@/constants/routes";
 import { requireRole } from "@/lib/auth/session";
 import { getAllPaymentsForAdmin } from "@/lib/api/admin";
 import { AdminTransactionsTable } from "@/components/dashboard/AdminTransactionsTable";
-import { ArrowLeft, ShieldCheck } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 

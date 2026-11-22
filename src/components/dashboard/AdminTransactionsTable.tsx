@@ -15,7 +15,6 @@ import {
   Wrench,
   DollarSign,
   TrendingUp,
-  ShieldCheck,
   CheckCircle2,
 } from "lucide-react";
 

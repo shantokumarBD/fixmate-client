@@ -5,6 +5,7 @@ import { getAdminStats, getAllBookingsForAdmin } from "@/lib/api/admin";
 import { StatsCard } from "@/components/shared/StatsCard";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { PaymentBadge } from "@/components/shared/PaymentBadge";
+import { AdminOverviewCharts } from "@/components/dashboard/AdminOverviewCharts";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import {
   Users,
@@ -27,10 +28,8 @@ export const metadata = {
 };
 
 export default async function AdminOverviewPage() {
-  
   await requireRole("admin");
 
-  
   const [stats, bookings] = await Promise.all([
     getAdminStats(),
     getAllBookingsForAdmin(),
@@ -38,10 +37,7 @@ export default async function AdminOverviewPage() {
 
   const recentBookings = bookings.slice(0, 5);
 
- 
   const customerCount = Math.max(0, stats.totalUsers - stats.totalTechnicians);
-  const techPercent = stats.totalUsers > 0 ? Math.round((stats.totalTechnicians / stats.totalUsers) * 100) : 0;
-  const customerPercent = 100 - techPercent;
 
   return (
     <div className="space-y-8 pb-16 w-full">
@@ -60,7 +56,8 @@ export default async function AdminOverviewPage() {
             Admin Control Console
           </h1>
           <p className="font-sans text-sm text-[#5B403A] mt-1">
-            Monitor gross platform revenue, user ecosystem, active repair tickets, and catalog moderation.
+            Monitor gross platform revenue, user ecosystem, active repair
+            tickets, and catalog moderation.
           </p>
         </div>
 
@@ -98,7 +95,11 @@ export default async function AdminOverviewPage() {
                 ACTION REQUIRED // MODERATION QUEUE
               </span>
               <p className="font-heading font-bold text-sm text-[#151515]">
-                {stats.pendingServices} {stats.pendingServices === 1 ? "repair service is" : "repair services are"} pending administrator review.
+                {stats.pendingServices}{" "}
+                {stats.pendingServices === 1
+                  ? "repair service is"
+                  : "repair services are"}{" "}
+                pending administrator review.
               </p>
             </div>
           </div>
@@ -112,7 +113,7 @@ export default async function AdminOverviewPage() {
         </div>
       )}
 
-      {/* ================= SECTION 1: 4 PLATFORM METRIC CARDS ================= */}
+      {/* ================= TIER 1: 4 PLATFORM METRIC CARDS ================= */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatsCard
           title="Gross Platform GMV"
@@ -143,7 +144,16 @@ export default async function AdminOverviewPage() {
         />
       </div>
 
-      {/* ================= SECTION 2: 2-COLUMN WORKBENCH GRID ================= */}
+      {/* ================= TIER 2: VISUAL ANALYTICS ROW (7:5 SPLIT) ================= */}
+      <div>
+        <AdminOverviewCharts
+          techCount={stats.totalTechnicians}
+          customerCount={customerCount}
+          recentBookings={bookings.slice(0, 6)}
+        />
+      </div>
+
+      {/* ================= TIER 3: WORKBENCH OPERATIONS (8:4 SPLIT) ================= */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* Left Column: Recent Platform Orders (8 Columns) */}
         <div className="lg:col-span-8 space-y-4">
@@ -174,7 +184,8 @@ export default async function AdminOverviewPage() {
                   No Platform Orders Yet
                 </h3>
                 <p className="font-sans text-xs text-[#5B403A] max-w-sm mt-1">
-                  When customers book repair appointments with technicians, tickets will stream into this audit console.
+                  When customers book repair appointments with technicians,
+                  tickets will stream into this audit console.
                 </p>
               </div>
             ) : (
@@ -197,8 +208,12 @@ export default async function AdminOverviewPage() {
                       </div>
 
                       <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-[#5B403A]">
-                        <span>Customer: <strong>{b.customerName}</strong></span>
-                        <span>Tech: <strong>{b.technicianName}</strong></span>
+                        <span>
+                          Customer: <strong>{b.customerName}</strong>
+                        </span>
+                        <span>
+                          Tech: <strong>{b.technicianName}</strong>
+                        </span>
                         <span className="flex items-center gap-1 font-mono text-[11px]">
                           <Calendar className="w-3.5 h-3.5 text-[#5B403A]" />
                           {formatDate(b.preferredDate)}
@@ -225,43 +240,9 @@ export default async function AdminOverviewPage() {
           </div>
         </div>
 
-        {/* Right Column: User Breakdown & Admin Consoles (4 Columns) */}
+        {/* Right Column: Operations Control & Security (4 Columns) */}
         <div className="lg:col-span-4 space-y-5">
-          {/* Card 1: User Distribution Breakdown */}
-          <div className="bg-[#FEF9EF] border-2 border-[#151515] rounded-[10px] p-5 shadow-[4px_4px_0px_#151515]">
-            <h3 className="font-heading font-extrabold text-sm uppercase text-[#151515] mb-1">
-              User Base Composition
-            </h3>
-            <p className="font-sans text-xs text-[#5B403A] mb-3">
-              Distribution between service seekers and workshop technicians.
-            </p>
-
-            <div className="space-y-2">
-              <div className="flex justify-between font-mono text-xs font-bold text-[#151515]">
-                <span>Technicians ({techPercent}%)</span>
-                <span>{stats.totalTechnicians}</span>
-              </div>
-              <div className="w-full h-2.5 bg-white border-2 border-[#151515] rounded-[3px] overflow-hidden p-0.5 flex">
-                <div
-                  className="h-full bg-[#FCD03D] transition-all"
-                  style={{ width: `${techPercent}%` }}
-                ></div>
-              </div>
-
-              <div className="flex justify-between font-mono text-xs font-bold text-[#151515] pt-1">
-                <span>Customers ({customerPercent}%)</span>
-                <span>{customerCount}</span>
-              </div>
-              <div className="w-full h-2.5 bg-white border-2 border-[#151515] rounded-[3px] overflow-hidden p-0.5 flex">
-                <div
-                  className="h-full bg-[#2563EB] transition-all"
-                  style={{ width: `${customerPercent}%` }}
-                ></div>
-              </div>
-            </div>
-          </div>
-
-          {/* Card 2: Interactive Admin Console Launchpad */}
+          {/* Card 1: Interactive Admin Console Launchpad */}
           <div className="bg-white border-2 border-[#151515] rounded-[10px] p-5 shadow-[4px_4px_0px_#151515]">
             <h3 className="font-heading font-extrabold text-sm uppercase text-[#151515] mb-3">
               Operations Control
@@ -273,7 +254,9 @@ export default async function AdminOverviewPage() {
               >
                 <div className="flex items-center gap-2.5">
                   <ShieldCheck className="w-4 h-4 text-[#FF5B2E]" />
-                  <span className="font-heading font-bold text-xs text-[#151515]">Service Moderation</span>
+                  <span className="font-heading font-bold text-xs text-[#151515]">
+                    Service Moderation
+                  </span>
                 </div>
                 {stats.pendingServices > 0 && (
                   <span className="bg-[#FF5B2E] text-white text-[10px] font-mono font-bold px-2 py-0.5 rounded-full">
@@ -288,7 +271,9 @@ export default async function AdminOverviewPage() {
               >
                 <div className="flex items-center gap-2.5">
                   <Users className="w-4 h-4 text-[#2563EB]" />
-                  <span className="font-heading font-bold text-xs text-[#151515]">Manage Users & Roles</span>
+                  <span className="font-heading font-bold text-xs text-[#151515]">
+                    Manage Users & Roles
+                  </span>
                 </div>
                 <ChevronRight className="w-4 h-4 text-[#5B403A]" />
               </Link>
@@ -299,7 +284,9 @@ export default async function AdminOverviewPage() {
               >
                 <div className="flex items-center gap-2.5">
                   <Wrench className="w-4 h-4 text-[#151515]" />
-                  <span className="font-heading font-bold text-xs text-[#151515]">All Platform Orders</span>
+                  <span className="font-heading font-bold text-xs text-[#151515]">
+                    All Platform Orders
+                  </span>
                 </div>
                 <ChevronRight className="w-4 h-4 text-[#5B403A]" />
               </Link>
@@ -310,20 +297,23 @@ export default async function AdminOverviewPage() {
               >
                 <div className="flex items-center gap-2.5">
                   <CreditCard className="w-4 h-4 text-[#16A34A]" />
-                  <span className="font-heading font-bold text-xs text-[#151515]">Financial Audits</span>
+                  <span className="font-heading font-bold text-xs text-[#151515]">
+                    Financial Audits
+                  </span>
                 </div>
                 <ChevronRight className="w-4 h-4 text-[#5B403A]" />
               </Link>
             </div>
           </div>
 
-          {/* Card 3: Security & Governance Compliance */}
+          {/* Card 2: Security & Governance Compliance */}
           <div className="bg-[#151515] text-[#F5F0E6] border-2 border-[#151515] rounded-[10px] p-4 shadow-[4px_4px_0px_#FF5B2E]">
             <span className="font-mono text-[11px] font-bold uppercase text-[#FCD03D] block mb-1">
               GOVERNANCE & SECURITY
             </span>
             <p className="font-sans text-xs text-[#DEDAD0] leading-relaxed">
-              Role modifications and service rejection actions are logged with operator session stamps for platform audit compliance.
+              Role modifications and service rejection actions are logged with
+              operator session stamps for platform audit compliance.
             </p>
           </div>
         </div>

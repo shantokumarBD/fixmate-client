@@ -3,7 +3,7 @@ import { ROUTES } from "@/constants/routes";
 import { requireRole, getSession } from "@/lib/auth/session";
 import { getAllUsers } from "@/lib/api/admin";
 import { AdminUsersTable } from "@/components/dashboard/AdminUsersTable";
-import { ArrowLeft, Users } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 

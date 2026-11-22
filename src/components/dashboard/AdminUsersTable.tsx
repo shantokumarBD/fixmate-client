@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useTransition } from "react";
+import  { useState, useTransition } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
@@ -10,13 +10,10 @@ import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { formatDate } from "@/lib/utils";
 import {
   Search,
-  Users,
-  ShieldAlert,
   Wrench,
   UserCheck,
   Inbox,
   Shield,
-  Loader2,
 } from "lucide-react";
 
 interface AdminUsersTableProps {

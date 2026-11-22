@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 import { Booking } from "@/types/booking";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { PaymentBadge } from "@/components/shared/PaymentBadge";
@@ -8,7 +8,7 @@ import { formatCurrency, formatDate } from "@/lib/utils";
 import {
   Search,
   Calendar,
-  Phone,
+
   MapPin,
   Inbox,
   FileText,
