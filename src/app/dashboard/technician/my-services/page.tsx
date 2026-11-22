@@ -3,7 +3,7 @@ import { ROUTES } from "@/constants/routes";
 import { requireRole } from "@/lib/auth/session";
 import { getMyTechnicianServices } from "@/lib/api/technician";
 import { TechnicianServicesTable } from "@/components/dashboard/TechnicianServicesTable";
-import { PlusCircle, Wrench } from "lucide-react";
+import { PlusCircle } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 

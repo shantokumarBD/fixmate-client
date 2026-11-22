@@ -4,7 +4,7 @@ import { ROUTES } from "@/constants/routes";
 import { requireRole } from "@/lib/auth/session";
 import { getTechnicianServiceById } from "@/lib/api/technician";
 import { EditServiceForm } from "@/components/forms/EditServiceForm";
-import { ArrowLeft, Wrench } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 

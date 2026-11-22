@@ -4,7 +4,7 @@ import React, { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { createServiceAction } from "@/actions/service";
-import { SERVICE_CATEGORIES, SERVICE_MODES } from "@/constants/roles";
+import { SERVICE_CATEGORIES, SERVICE_MODES, ServiceCategory } from "@/constants/roles";
 import { ROUTES } from "@/constants/routes";
 import { ImageUploader } from "@/components/shared/ImageUploader";
 import {
@@ -23,7 +23,7 @@ export function AddServiceForm() {
   const [isPending, startTransition] = useTransition();
 
   const [imageUrl, setImageUrl] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState(SERVICE_CATEGORIES[0]);
+const [selectedCategory, setSelectedCategory] = useState<ServiceCategory>(SERVICE_CATEGORIES[0]);
   const [selectedMode, setSelectedMode] = useState<"Home Visit" | "Shop Drop-off">("Home Visit");
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -104,7 +104,7 @@ export function AddServiceForm() {
             <Tag className="w-4 h-4 text-[#5B403A] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
             <select
               value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value as any)}
+              onChange={(e) => setSelectedCategory(e.target.value as ServiceCategory)}
               className="w-full pl-10 pr-4 py-2.5 bg-white border-2 border-[#151515] rounded-[6px] shadow-[2px_2px_0px_#151515] font-sans text-sm text-[#151515] focus:outline-none focus:ring-2 focus:ring-[#FF5B2E] appearance-none cursor-pointer"
             >
               {SERVICE_CATEGORIES.map((cat) => (
