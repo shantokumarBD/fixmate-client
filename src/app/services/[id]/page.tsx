@@ -11,10 +11,13 @@ import {
   ArrowLeft,
   Wrench,
   Award,
+  Star,
+  MessageSquare,
 } from "lucide-react";
 import { getServiceById } from "@/lib/api/services";
 import { BookServiceButton } from "@/components/services/BookServiceButton";
 import { ROUTES } from "@/constants/routes";
+import { formatDate } from "@/lib/utils";
 import type { Metadata } from "next";
 
 export async function generateMetadata({
@@ -118,6 +121,23 @@ export default async function ServiceDetailsPage({ params }: ServiceDetailsPageP
                 {service.title}
               </h1>
 
+              {/* Service Rating Summary Banner */}
+              <div className="flex items-center gap-3 mt-3 flex-wrap">
+                <div className="inline-flex items-center gap-1.5 font-mono text-xs font-bold text-[#151515] bg-[#FEF9EF] border-2 border-[#151515] px-2.5 py-1 rounded-[6px] shadow-[2px_2px_0px_#151515]">
+                  <Star className="w-4 h-4 fill-[#FCD03D] text-[#151515]" />
+                  <span>
+                    {service.averageRating && service.averageRating > 0
+                      ? `${service.averageRating.toFixed(1)} / 5.0`
+                      : "New Service"}
+                  </span>
+                </div>
+                <span className="font-mono text-xs text-[#5B403A]">
+                  {service.reviewCount && service.reviewCount > 0
+                    ? `(${service.reviewCount} verified client review${service.reviewCount > 1 ? "s" : ""})`
+                    : "No reviews yet"}
+                </span>
+              </div>
+
               {/* Service Hero Image */}
               <div className="mt-5 h-[280px] sm:h-[380px] w-full bg-[#DEDAD0] border-2 border-[#151515] rounded-[8px] relative overflow-hidden shadow-[2px_2px_0px_#151515]">
                 <Image
@@ -184,6 +204,138 @@ export default async function ServiceDetailsPage({ params }: ServiceDetailsPageP
                   </div>
                 ))}
               </div>
+            </div>
+
+            {/* Customer Ratings & Reviews Section (Feature 3) */}
+            <div className="bg-white border-2 border-[#151515] rounded-[10px] shadow-[4px_4px_0px_#151515] p-5 sm:p-6 space-y-5">
+              <div className="flex items-center justify-between pb-3 border-b-2 border-[#151515] flex-wrap gap-2">
+                <div className="flex items-center gap-2">
+                  <Star className="w-5 h-5 fill-[#FCD03D] text-[#151515]" />
+                  <h2 className="font-mono text-xs font-bold uppercase tracking-wider text-[#151515]">
+                    Customer Ratings & Reviews
+                  </h2>
+                </div>
+                <span className="font-mono text-[10px] uppercase font-bold text-[#151515] bg-[#FEF9EF] border border-[#151515] px-2 py-0.5 rounded shadow-[1px_1px_0px_#151515]">
+                  VERIFIED REPAIRS ONLY
+                </span>
+              </div>
+
+              {/* Rating Overview Summary Box */}
+              <div className="bg-[#FEF9EF] border-2 border-[#151515] rounded-[8px] p-4 sm:p-5 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-[2px_2px_0px_#151515]">
+                <div className="flex items-center gap-4 text-center sm:text-left">
+                  <div className="w-16 h-16 bg-[#FCD03D] border-2 border-[#151515] rounded-[8px] flex items-center justify-center font-heading font-black text-2xl text-[#151515] shadow-[2px_2px_0px_#151515]">
+                    {service.averageRating && service.averageRating > 0
+                      ? service.averageRating.toFixed(1)
+                      : "—"}
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-1 justify-center sm:justify-start">
+                      {[1, 2, 3, 4, 5].map((starIdx) => {
+                        const isFilled =
+                          service.averageRating &&
+                          starIdx <= Math.round(service.averageRating);
+                        return (
+                          <Star
+                            key={starIdx}
+                            className={`w-4 h-4 ${
+                              isFilled
+                                ? "fill-[#FCD03D] text-[#151515]"
+                                : "text-[#151515]/30"
+                            }`}
+                          />
+                        );
+                      })}
+                    </div>
+                    <p className="font-mono text-xs font-bold text-[#151515] mt-1">
+                      {service.averageRating && service.averageRating > 0
+                        ? `${service.averageRating.toFixed(1)} out of 5.0 Stars`
+                        : "No ratings yet"}
+                    </p>
+                    <p className="font-sans text-[11px] text-[#5B403A]">
+                      Based on {service.reviewCount || 0} verified customer work order{service.reviewCount === 1 ? "" : "s"}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="sm:border-l-2 sm:border-[#151515]/20 sm:pl-5 text-center sm:text-right">
+                  <span className="font-mono text-[10px] uppercase font-bold text-[#5B403A] block">
+                    SERVICE INTEGRITY
+                  </span>
+                  <span className="font-mono text-xs font-bold text-[#10B981] inline-flex items-center gap-1 mt-0.5">
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    <span>100% Post-Payment Reviews</span>
+                  </span>
+                </div>
+              </div>
+
+              {/* Individual Reviews List */}
+              {service.reviews && service.reviews.length > 0 ? (
+                <div className="space-y-3.5 pt-2">
+                  {service.reviews.map((rev, idx) => {
+                    const initials = rev.customerName
+                      ? rev.customerName.charAt(0).toUpperCase()
+                      : "C";
+                    const formattedDate = formatDate(rev.createdAt);
+
+                    return (
+                      <div
+                        key={rev.reviewId || idx}
+                        className="p-4 bg-[#F5F0E6] border-2 border-[#151515] rounded-[8px] shadow-[2px_2px_0px_#151515] space-y-2.5"
+                      >
+                        <div className="flex items-start justify-between gap-2 flex-wrap">
+                          <div className="flex items-center gap-2.5">
+                            <div className="w-8 h-8 rounded-full bg-[#151515] text-[#FEF9EF] font-heading font-black text-xs flex items-center justify-center shrink-0">
+                              {initials}
+                            </div>
+                            <div>
+                              <div className="font-heading font-bold text-xs sm:text-sm text-[#151515] leading-tight">
+                                {rev.customerName || "FixMate Customer"}
+                              </div>
+                              <span className="font-mono text-[10px] text-[#5B403A]">
+                                Verified Work Order • {formattedDate}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Stars */}
+                          <div className="flex items-center gap-0.5 bg-white border border-[#151515] px-2 py-0.5 rounded-[4px]">
+                            {[1, 2, 3, 4, 5].map((starIdx) => (
+                              <Star
+                                key={starIdx}
+                                className={`w-3.5 h-3.5 ${
+                                  starIdx <= rev.rating
+                                    ? "fill-[#FCD03D] text-[#151515]"
+                                    : "text-[#151515]/20"
+                                }`}
+                              />
+                            ))}
+                            <span className="font-mono text-xs font-bold text-[#151515] ml-1">
+                              {rev.rating}.0
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Review Comment */}
+                        <p className="font-sans text-xs sm:text-sm text-[#151515]/90 leading-relaxed font-normal bg-white p-3 border border-[#151515]/20 rounded-[6px]">
+                          &quot;{rev.comment}&quot;
+                        </p>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="p-6 text-center bg-[#F5F0E6] border-2 border-dashed border-[#151515] rounded-[8px] space-y-2">
+                  <div className="w-10 h-10 mx-auto rounded-full bg-[#FEF9EF] border-2 border-[#151515] flex items-center justify-center">
+                    <MessageSquare className="w-5 h-5 text-[#5B403A]" />
+                  </div>
+                  <h4 className="font-heading font-bold text-sm text-[#151515]">
+                    No Customer Reviews Yet
+                  </h4>
+                  <p className="font-sans text-xs text-[#5B403A] max-w-sm mx-auto">
+                    Reviews can only be submitted by verified customers after service completion and payment settlement. Book now to be the first!
+                  </p>
+                </div>
+              )}
             </div>
 
           </div>

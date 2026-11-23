@@ -1,7 +1,7 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Star } from "lucide-react";
 import { Service } from "@/types/service";
 
 interface ServiceCardProps {
@@ -47,9 +47,19 @@ export function ServiceCard({ service }: ServiceCardProps) {
           <p className="font-sans text-xs text-[#151515]/75 mt-1 font-medium">
             Technician: <span className="font-semibold text-[#151515]">{service.technicianName || "Certified Master"}</span>
           </p>
-          <div className="mt-2 font-mono text-[11px] text-[#151515]/70 flex items-center gap-1">
-            <span>⏱️ Est. Duration:</span>
-            <span className="font-bold text-[#151515]">{service.estimatedDuration || "1 - 2 Hours"}</span>
+          <div className="mt-2.5 flex items-center justify-between gap-2">
+            <div className="font-mono text-[11px] text-[#151515]/70 flex items-center gap-1">
+              <span>⏱️</span>
+              <span className="font-bold text-[#151515]">{service.estimatedDuration || "1 - 2 Hours"}</span>
+            </div>
+            <div className="flex items-center gap-1 font-mono text-[11px] font-bold text-[#151515] bg-[#FEF9EF] border border-[#151515] px-1.5 py-0.5 rounded-[4px] shadow-[1px_1px_0px_#151515]">
+              <Star className="w-3 h-3 fill-[#FCD03D] text-[#151515]" />
+              <span>
+                {service.averageRating && service.averageRating > 0
+                  ? `${service.averageRating.toFixed(1)} (${service.reviewCount || 0})`
+                  : "New"}
+              </span>
+            </div>
           </div>
         </div>
       </div>

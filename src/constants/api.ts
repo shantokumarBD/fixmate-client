@@ -42,6 +42,12 @@ export const API_ENDPOINTS = {
     GET_MY: `${API_BASE_URL}/api/payments/my`,
   },
 
+  // Reviews & Ratings
+  REVIEWS: {
+    POST: `${API_BASE_URL}/api/reviews`,
+    GET_BY_SERVICE: (serviceId: string) => `${API_BASE_URL}/api/reviews/service/${serviceId}`,
+  },
+
   // Admin Protected
   ADMIN: {
     GET_STATS: `${API_BASE_URL}/api/admin/stats`,
