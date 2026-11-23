@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ROUTES } from "@/constants/routes";
-import { requireRole, getSession } from "@/lib/auth/session";
+import { requireRole } from "@/lib/auth/session";
 import { getAllUsers } from "@/lib/api/admin";
 import { AdminUsersTable } from "@/components/dashboard/AdminUsersTable";
 import { ArrowLeft } from "lucide-react";
@@ -12,11 +12,8 @@ export const metadata = {
 };
 
 export default async function AdminUsersPage() {
-  
-  await requireRole("admin");
-  const session = await getSession();
+  const session = await requireRole("admin");
 
-  
   const users = await getAllUsers();
 
   return (

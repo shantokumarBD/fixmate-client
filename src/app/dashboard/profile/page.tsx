@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { ROUTES } from "@/constants/routes";
 import { UserRole } from "@/constants/roles";
-import { getSession } from "@/lib/auth/session";
+import { getSessionWithRetry } from "@/lib/auth/session";
 import { getMyProfile } from "@/lib/api/user";
 import { ProfileSettingsForm } from "@/components/forms/ProfileSettingsForm";
 
@@ -13,7 +13,7 @@ export const metadata = {
 
 export default async function DashboardProfilePage() {
   
-  const session = await getSession();
+  const session = await getSessionWithRetry();
 
   if (!session?.user) {
     redirect(ROUTES.SIGN_IN);

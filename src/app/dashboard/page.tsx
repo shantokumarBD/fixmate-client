@@ -1,9 +1,9 @@
 import { redirect } from "next/navigation";
-import { getSession } from "@/lib/auth/session";
+import { getSessionWithRetry } from "@/lib/auth/session";
 import { ROUTES } from "@/constants/routes";
 
 export default async function DashboardRootPage() {
-  const session = await getSession();
+  const session = await getSessionWithRetry();
 
   if (!session?.user) {
     redirect(ROUTES.SIGN_IN);
