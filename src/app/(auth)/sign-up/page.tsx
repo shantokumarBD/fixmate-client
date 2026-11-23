@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { ShieldCheck, Wrench, Shield } from "lucide-react";
 import { SignUpForm } from "@/components/forms/SignUpForm";
-import { getSession } from "@/lib/auth/session";
+import { getSessionSafe } from "@/lib/auth/session";
 import { redirect } from "next/navigation";
 
 export const metadata: Metadata = {
@@ -11,10 +11,9 @@ export const metadata: Metadata = {
 };
 
 export default async function SignUpPage() {
-
-    const session = await getSession();
+  const session = await getSessionSafe();
   if (session?.user) {
-    redirect("/");
+    redirect("/dashboard");
   }
 
   return (

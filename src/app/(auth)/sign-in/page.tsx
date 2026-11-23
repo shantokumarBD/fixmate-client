@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import { ShieldCheck, Wrench, Shield } from "lucide-react";
 import { SignInForm } from "@/components/forms/SignInForm";
-import { getSession } from "@/lib/auth/session";
+import { getSessionSafe } from "@/lib/auth/session";
 import { redirect } from "next/navigation";
 
 export const metadata: Metadata = {
@@ -12,9 +12,9 @@ export const metadata: Metadata = {
 };
 
 export default async function SignInPage() {
-    const session = await getSession();
+  const session = await getSessionSafe();
   if (session?.user) {
-    redirect("/");
+    redirect("/dashboard");
   }
   return (
     <div className="w-full max-w-4xl my-auto">
