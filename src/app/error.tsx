@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, startTransition } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { AlertTriangle, RotateCcw, Home } from "lucide-react";
 import { ROUTES } from "@/constants/routes";
 
@@ -11,9 +12,18 @@ interface GlobalErrorProps {
 }
 
 export default function GlobalError({ error, reset }: GlobalErrorProps) {
+  const router = useRouter();
+
   useEffect(() => {
-    console.error("FixMate Runtime Glitch:", error);
+    console.error("FixMate Telemetry Glitch:", error);
   }, [error]);
+
+  const handleRetry = () => {
+    startTransition(() => {
+      router.refresh();
+      reset();
+    });
+  };
 
   return (
     <div className="min-h-screen bg-[#FEF9EF] flex flex-col justify-center items-center p-4 selection:bg-[#FF5B2E] selection:text-[#151515]">
@@ -31,7 +41,7 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
           </span>
         </div>
 
-        {/* Error Body */}
+        {/* Card Body */}
         <div className="p-6 text-center space-y-4">
           <div className="w-14 h-14 mx-auto rounded-full bg-[#FEF9EF] border-2 border-[#151515] flex items-center justify-center shadow-[3px_3px_0px_#151515]">
             <AlertTriangle className="w-7 h-7 text-[#FF5B2E]" />
@@ -42,7 +52,7 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
               Workbench Interrupted
             </h2>
             <p className="font-sans text-xs sm:text-sm text-[#5B403A] mt-1.5 leading-relaxed">
-              An unexpected operational fault occurred while rendering this station. Our telemetry logs have captured this incident.
+              This station failed to load due to an operational interruption. Please click the retry button below to reload the view.
             </p>
           </div>
 
@@ -55,7 +65,7 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
           {/* Action Buttons */}
           <div className="grid grid-cols-2 gap-3 pt-2 border-t-2 border-[#151515]">
             <button
-              onClick={() => reset()}
+              onClick={handleRetry}
               className="py-2.5 px-3 bg-[#FF5B2E] text-white border-2 border-[#151515] shadow-[2px_2px_0px_#000000] font-heading font-bold text-xs uppercase tracking-wider hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0 active:translate-y-0 active:shadow-none transition-all rounded-[6px] inline-flex items-center justify-center gap-1.5 cursor-pointer"
             >
               <RotateCcw className="w-3.5 h-3.5" />

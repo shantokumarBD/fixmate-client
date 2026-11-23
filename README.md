@@ -33,7 +33,7 @@ Use the 1-click **Quick Demo Fill** buttons on the `/sign-in` page or manually a
 
 | Role | Email Address | Default Password | Initial Dashboard |
 | :--- | :--- | :--- | :--- |
-| **Admin** | `admin@fixmate.com` | `Pass1234` *(or `Admin@12345`)* | `/dashboard/admin` |
+| **Admin** | `admin@fixmate.com` | `Pass1234` | `/dashboard/admin` |
 | **Technician** | `rahim.tech@fixmate.com` | `Pass1234` | `/dashboard/technician` |
 | **Customer** | `customer@fixmate.com` | `Pass1234` | `/dashboard/customer` |
 
