@@ -22,6 +22,8 @@ interface ServiceSidebarProps {
     category?: string;
     serviceMode?: string;
     sort?: string;
+    page?: string;
+    limit?: string;
   };
   categoryCounts: Record<string, number>;
 }
@@ -32,12 +34,18 @@ export function ServiceSidebar({ currentFilters, categoryCounts }: ServiceSideba
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  
+  // Build query string keeping filters and resetting page to 1 when filters change
   const buildUrl = (updates: Record<string, string | undefined>) => {
     const params = new URLSearchParams();
-    const merged = { ...currentFilters, ...updates };
+    // Whenever a filter (category, search, mode, sort) changes, reset page to 1 unless page is explicitly passed
+    const resetPage = !("page" in updates);
+    const merged = {
+      ...currentFilters,
+      ...(resetPage ? { page: undefined } : {}),
+      ...updates,
+    };
     for (const [key, val] of Object.entries(merged)) {
-      if (val?.trim()) params.set(key, val.trim());
+      if (val && String(val).trim()) params.set(key, String(val).trim());
     }
     return params.toString() ? `${ROUTES.SERVICES}?${params}` : ROUTES.SERVICES;
   };

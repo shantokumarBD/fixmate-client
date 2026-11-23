@@ -4,6 +4,7 @@ import { Wrench, RotateCcw, X } from "lucide-react";
 import { fetchFilteredServices, getCategoryCounts } from "@/lib/api/services";
 import { ServiceCard } from "@/components/shared/ServiceCard";
 import { ServiceSidebar } from "@/components/services/ServiceSidebar";
+import { PaginationControls } from "@/components/services/PaginationControls";
 import { ROUTES } from "@/constants/routes";
 import type { Metadata } from "next";
 
@@ -19,6 +20,8 @@ interface ServicesPageProps {
     category?: string;
     serviceMode?: string;
     sort?: string;
+    page?: string;
+    limit?: string;
   }>;
 }
 
@@ -50,7 +53,7 @@ function ServicesLoadingSkeleton() {
 // 2. Dynamic Content Component (Streamed via Suspense)
 async function ServicesContent({ searchParams }: ServicesPageProps) {
   const filters = await searchParams;
-  const [services, categoryCounts] = await Promise.all([
+  const [{ services, pagination }, categoryCounts] = await Promise.all([
     fetchFilteredServices(filters),
     getCategoryCounts(),
   ]);
@@ -65,13 +68,18 @@ async function ServicesContent({ searchParams }: ServicesPageProps) {
         />
       </aside>
 
-      {/* Right Column: Active Badges + Cards Grid */}
-      <section className="lg:col-span-3 space-y-4">
+      {/* Right Column: Active Badges + Cards Grid + Pagination Controls */}
+      <section className="lg:col-span-3 space-y-6">
         {/* Results Counter & Active Filter Tags */}
         <div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-white border-2 border-[#151515] rounded-[8px] shadow-[2px_2px_0px_#151515]">
           <div className="font-mono text-xs font-bold text-[#151515]">
-            {services.length} {services.length === 1 ? "SERVICE" : "SERVICES"}{" "}
+            {pagination.total} {pagination.total === 1 ? "SERVICE" : "SERVICES"}{" "}
             AVAILABLE
+            {pagination.totalPages > 1 && (
+              <span className="text-[#151515]/60 ml-2 font-medium">
+                (Page {pagination.page} of {pagination.totalPages})
+              </span>
+            )}
           </div>
 
           {(filters.category || filters.serviceMode || filters.search) && (
@@ -105,11 +113,19 @@ async function ServicesContent({ searchParams }: ServicesPageProps) {
 
         {/* Services Grid or Resilient Empty State */}
         {services.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-            {services.map((service) => (
-              <ServiceCard key={service._id} service={service} />
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+              {services.map((service) => (
+                <ServiceCard key={service._id} service={service} />
+              ))}
+            </div>
+
+            {/* Pagination Controls Component */}
+            <PaginationControls
+              pagination={pagination}
+              currentFilters={filters}
+            />
+          </>
         ) : (
           <div className="w-full bg-white border-2 border-[#151515] shadow-[4px_4px_0px_#151515] rounded-[10px] p-12 text-center flex flex-col items-center justify-center">
             <div className="w-12 h-12 bg-[#FCD03D] border-2 border-[#151515] rounded-[8px] flex items-center justify-center shadow-[3px_3px_0px_#151515] mb-3">

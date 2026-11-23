@@ -1,5 +1,16 @@
 import { ApprovalStatus, ServiceCategory, ServiceMode } from "@/constants/roles";
 
+export interface Review {
+  reviewId: string;
+  bookingId: string;
+  customerName: string;
+  customerEmail: string;
+  customerImage?: string;
+  rating: number;
+  comment: string;
+  createdAt: string;
+}
+
 export interface Service {
   _id: string;
   title: string;
@@ -15,14 +26,32 @@ export interface Service {
   approvalStatus: ApprovalStatus;
   isAvailable: boolean;
   createdAt: string;
+  averageRating?: number;
+  reviewCount?: number;
+  reviews?: Review[];
 }
 
 export interface ServiceFilters {
   search?: string;
   category?: string;
   serviceMode?: string;
-  sort?: "price-asc" | "price-desc" | "newest";
-  limit?: number;
+  sort?: "priceLowToHigh" | "priceHighToLow" | "newest" | string;
+  page?: string | number;
+  limit?: string | number;
+}
+
+export interface PaginationMeta {
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+  hasNextPage: boolean;
+  hasPrevPage: boolean;
+}
+
+export interface PaginatedServicesResponse {
+  services: Service[];
+  pagination: PaginationMeta;
 }
 
 export interface TechnicianSummary {
