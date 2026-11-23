@@ -14,7 +14,7 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { ROUTES } from "@/constants/routes";
-import { getSession } from "@/lib/auth/session";
+import { getSessionSafe } from "@/lib/auth/session";
 
 export const metadata: Metadata = {
   title: "How It Works | Engineering-Grade Repair Protocol",
@@ -103,7 +103,7 @@ const FAQS = [
 
 // স্মার্ট ডায়নামিক বাটন (লগইন থাকলে ড্যাশবোর্ড দেখাবে, না থাকলে সাইন-আপ)
 async function DynamicCtaButton() {
-  const session = await getSession();
+  const session = await getSessionSafe();
   const user = session?.user;
 
   if (user) {

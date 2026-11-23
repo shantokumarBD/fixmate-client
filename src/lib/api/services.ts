@@ -3,15 +3,16 @@ import { Service, ServiceDetail } from "@/types/service";
 import { authFetch } from "@/lib/auth/session";
 
 /**
- * Server fetcher: Top 6 featured services for homepage
+ * Server fetcher: Top 6 featured services for homepage (bounded by 6s timeout)
  */
 export async function getFeaturedServices(limit: number = 6): Promise<Service[]> {
   try {
     const res = await fetch(`${API_ENDPOINTS.SERVICES.GET_ALL}?limit=${limit}`, {
       next: { revalidate: 60 },
+      signal: AbortSignal.timeout(6000),
     });
     if (!res.ok) return [];
-    const data = await res.json();
+    const data = await res.json().catch(() => []);
     return Array.isArray(data) ? data : [];
   } catch {
     return [];
@@ -19,15 +20,16 @@ export async function getFeaturedServices(limit: number = 6): Promise<Service[]>
 }
 
 /**
- * Server fetcher: Real-time service counts per category directly from MongoDB
+ * Server fetcher: Real-time service counts per category (bounded by 6s timeout)
  */
 export async function getCategoryCounts(): Promise<Record<string, number>> {
   try {
     const res = await fetch(API_ENDPOINTS.SERVICES.GET_ALL, {
       next: { revalidate: 60 },
+      signal: AbortSignal.timeout(6000),
     });
     if (!res.ok) return {};
-    const services: Service[] = await res.json();
+    const services: Service[] = await res.json().catch(() => []);
 
     const counts: Record<string, number> = {};
     if (Array.isArray(services)) {
@@ -42,7 +44,7 @@ export async function getCategoryCounts(): Promise<Record<string, number>> {
 }
 
 /**
- * Server fetcher: Multi-criteria filtered services for Browse Services page 
+ * Server fetcher: Multi-criteria filtered services for Browse Services page (bounded by 6s timeout)
  */
 export async function fetchFilteredServices(filters: {
   search?: string;
@@ -64,10 +66,11 @@ export async function fetchFilteredServices(filters: {
 
     const res = await fetch(url, {
       next: { revalidate: 30 },
+      signal: AbortSignal.timeout(6000),
     });
 
     if (!res.ok) return [];
-    const data = await res.json();
+    const data = await res.json().catch(() => []);
     return Array.isArray(data) ? data : [];
   } catch (error) {
     console.error("Failed to fetch filtered services:", error);
@@ -76,37 +79,49 @@ export async function fetchFilteredServices(filters: {
 }
 
 /**
- * Server fetcher: Single service details with technician profile summary 
+ * Server fetcher: Single service details
+ * - Validates strict 24-character hexadecimal MongoDB ObjectId regex
+ * - Returns null ONLY on authentic 404 Not Found or invalid hex format
+ * - Throws on 5xx or cold-start network drop to prevent false 404 pages
  */
 export async function getServiceById(id: string): Promise<ServiceDetail | null> {
-  try {
-    // Security check: validate MongoDB ObjectId length
-    if (!id || id.length !== 24) return null;
+  // Security check: validate exact 24-character hexadecimal MongoDB ObjectId
+  if (!id || !/^[0-9a-fA-F]{24}$/.test(id)) return null;
 
+  try {
     const res = await fetch(`${API_ENDPOINTS.SERVICES.GET_ALL}/${id}`, {
       next: { revalidate: 60 },
+      signal: AbortSignal.timeout(6000),
     });
 
-    if (!res.ok) return null;
-    const data = await res.json();
+    // Authentic 404: Service genuinely does not exist in database
+    if (res.status === 404) return null;
+
+    if (!res.ok) {
+      // 5xx or gateway error: Server is waking up, not a 404!
+      throw new Error("Service details delayed: dispatch gateway is reconnecting. Please retry.");
+    }
+
+    const data = await res.json().catch(() => null);
     return data && data._id ? data : null;
-  } catch (error) {
+  } catch (error: unknown) {
+    if ((error as Error)?.message?.includes("delayed")) throw error;
     console.error("Failed to fetch service details:", error);
-    return null;
+    // Network/timeout error: throw so error boundary handles reconnect instead of false 404
+    throw new Error("Service details delayed: dispatch gateway is reconnecting. Please retry.");
   }
 }
 
 /**
  * Server fetcher: Get all services authored by the logged-in technician 
  */
-
 export async function getMyTechnicianServices(): Promise<Service[]> {
   try {
     const res = await authFetch(API_ENDPOINTS.SERVICES.GET_MY, {
       cache: "no-store", // Dashboard real-time live data
     });
     if (!res.ok) return [];
-    const data = await res.json();
+    const data = await res.json().catch(() => []);
     return Array.isArray(data) ? data : [];
   } catch {
     return [];

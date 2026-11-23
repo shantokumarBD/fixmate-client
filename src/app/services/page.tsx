@@ -57,10 +57,12 @@ async function ServicesContent({ searchParams }: ServicesPageProps) {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
-      
       {/* Left Column: 100% Fixed Sticky Sidebar */}
       <aside className="lg:col-span-1 lg:sticky lg:top-24 self-start z-20">
-        <ServiceSidebar currentFilters={filters} categoryCounts={categoryCounts} />
+        <ServiceSidebar
+          currentFilters={filters}
+          categoryCounts={categoryCounts}
+        />
       </aside>
 
       {/* Right Column: Active Badges + Cards Grid */}
@@ -68,7 +70,8 @@ async function ServicesContent({ searchParams }: ServicesPageProps) {
         {/* Results Counter & Active Filter Tags */}
         <div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-white border-2 border-[#151515] rounded-[8px] shadow-[2px_2px_0px_#151515]">
           <div className="font-mono text-xs font-bold text-[#151515]">
-            {services.length} {services.length === 1 ? "SERVICE" : "SERVICES"} AVAILABLE
+            {services.length} {services.length === 1 ? "SERVICE" : "SERVICES"}{" "}
+            AVAILABLE
           </div>
 
           {(filters.category || filters.serviceMode || filters.search) && (
@@ -100,28 +103,28 @@ async function ServicesContent({ searchParams }: ServicesPageProps) {
           )}
         </div>
 
-        {/* Services Grid or Empty State */}
+        {/* Services Grid or Resilient Empty State */}
         {services.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 items-stretch">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
             {services.map((service) => (
               <ServiceCard key={service._id} service={service} />
             ))}
           </div>
         ) : (
           <div className="w-full bg-white border-2 border-[#151515] shadow-[4px_4px_0px_#151515] rounded-[10px] p-12 text-center flex flex-col items-center justify-center">
-            <div className="w-12 h-12 rounded-[8px] bg-[#FCD03D] border-2 border-[#151515] flex items-center justify-center shadow-[2px_2px_0px_#151515] mb-3">
+            <div className="w-12 h-12 bg-[#FCD03D] border-2 border-[#151515] rounded-[8px] flex items-center justify-center shadow-[3px_3px_0px_#151515] mb-3">
               <Wrench className="w-6 h-6 text-[#151515]" />
             </div>
-            <h3 className="font-heading font-bold text-lg text-[#151515]">
-              No Services Found
+            <h3 className="font-heading font-extrabold text-xl text-[#151515]">
+              No Services Displayed
             </h3>
-            <p className="font-sans text-xs text-[#151515]/70 mt-1 max-w-sm">
-              We couldn&apos;t find any repair services matching your selected filters.
+            <p className="font-sans text-xs sm:text-sm text-[#5B403A] max-w-sm mt-1">
+              No verified repair offerings match your criteria, or the dispatch
+              gateway is warming up. Try resetting filters or reloading.
             </p>
             <Link
               href={ROUTES.SERVICES}
-              scroll={false}
-              className="mt-4 inline-flex items-center gap-1.5 bg-[#FF5B2E] text-[#151515] border-2 border-[#151515] shadow-[3px_3px_0px_#151515] hover:shadow-[1px_1px_0px_#151515] font-mono text-xs font-bold px-3.5 py-2 rounded-[6px] transition-all"
+              className="mt-5 inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#FF5B2E] text-white border-2 border-[#151515] shadow-[2px_2px_0px_#151515] font-mono text-xs font-bold uppercase rounded-[6px] hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0 active:translate-y-0 active:shadow-none transition-all"
             >
               <RotateCcw className="w-3.5 h-3.5" />
               <span>Reset All Filters</span>
@@ -138,7 +141,6 @@ export default function ServicesPage({ searchParams }: ServicesPageProps) {
   return (
     <main className="w-full min-h-screen bg-[#F5F0E6] py-6 text-[#151515]">
       <div className="max-w-[1200px] mx-auto px-4 sm:px-8">
-        
         {/* Compact Clean Header - Aligned with Navbar */}
         <div className="mb-6 pb-4 border-b-2 border-[#151515]">
           <h1 className="font-heading font-extrabold text-2xl sm:text-3xl text-[#151515] tracking-tight flex flex-wrap items-center">
@@ -149,7 +151,8 @@ export default function ServicesPage({ searchParams }: ServicesPageProps) {
             <span>Services</span>
           </h1>
           <p className="mt-2 font-sans text-xs sm:text-sm text-[#151515]/75 font-medium">
-            Transparent upfront quotes • 90-day parts warranty • Pay only after inspection
+            Transparent upfront quotes • 90-day parts warranty • Pay only after
+            inspection
           </p>
         </div>
 
@@ -157,7 +160,6 @@ export default function ServicesPage({ searchParams }: ServicesPageProps) {
         <Suspense fallback={<ServicesLoadingSkeleton />}>
           <ServicesContent searchParams={searchParams} />
         </Suspense>
-
       </div>
     </main>
   );

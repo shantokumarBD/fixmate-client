@@ -21,20 +21,28 @@ export async function generateMetadata({
   params,
 }: ServiceDetailsPageProps): Promise<Metadata> {
   const { id } = await params;
-  const service = await getServiceById(id);
+  try {
+    const service = await getServiceById(id);
 
-  if (!service) {
+    if (!service) {
+      return {
+        title: "Service Not Found | FixMate",
+      };
+    }
+
     return {
-      title: "Service Not Found | FixMate",
+      title: `${service.title} | FixMate Workshop`,
+      description:
+        service.description?.slice(0, 160) ||
+        "Certified smart device and home appliance repair service with 90-day workshop warranty.",
+    };
+  } catch {
+    return {
+      title: "Workshop Service Manifest | FixMate",
+      description:
+        "Certified smart device and home appliance repair service with 90-day workshop warranty.",
     };
   }
-
-  return {
-    title: `${service.title} | FixMate Workshop`,
-    description:
-      service.description?.slice(0, 160) ||
-      "Certified smart device and home appliance repair service with 90-day workshop warranty.",
-  };
 }
 
 interface ServiceDetailsPageProps {
