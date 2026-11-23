@@ -14,7 +14,7 @@ export async function updateUserRoleAction(userId: string, role: string) {
       body: JSON.stringify({ role }),
     });
 
-    const data = await res.json();
+    const data = await res.json().catch(() => ({}));
 
     if (!res.ok) {
       return {
@@ -32,9 +32,15 @@ export async function updateUserRoleAction(userId: string, role: string) {
     };
   } catch (error: unknown) {
     const err = error as Error;
+    const isNetwork =
+      err.message?.includes("fetch failed") ||
+      err.message?.includes("ECONNREFUSED") ||
+      err.message?.includes("Failed to communicate");
     return {
       success: false,
-      error: err.message || "Network error. Please try again later.",
+      error: isNetwork
+        ? "Network error. Please try again later."
+        : err.message || "Network error. Please try again later.",
     };
   }
 }
@@ -52,7 +58,7 @@ export async function updateServiceApprovalAction(
       body: JSON.stringify({ approvalStatus }),
     });
 
-    const data = await res.json();
+    const data = await res.json().catch(() => ({}));
 
     if (!res.ok) {
       return {
@@ -73,9 +79,15 @@ export async function updateServiceApprovalAction(
     };
   } catch (error: unknown) {
     const err = error as Error;
+    const isNetwork =
+      err.message?.includes("fetch failed") ||
+      err.message?.includes("ECONNREFUSED") ||
+      err.message?.includes("Failed to communicate");
     return {
       success: false,
-      error: err.message || "Network error. Please try again later.",
+      error: isNetwork
+        ? "Network error. Please try again later."
+        : err.message || "Network error. Please try again later.",
     };
   }
 }

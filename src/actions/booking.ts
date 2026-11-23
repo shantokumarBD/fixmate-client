@@ -15,7 +15,7 @@ export async function createBookingAction(input: CreateBookingInput) {
       body: JSON.stringify(input),
     });
 
-    const data = await res.json();
+    const data = await res.json().catch(() => ({}));
 
     if (!res.ok) {
       return {
@@ -35,11 +35,14 @@ export async function createBookingAction(input: CreateBookingInput) {
     };
   } catch (error: unknown) {
     const err = error as Error;
-    const isNetworkError = err.message?.includes("fetch failed");
+    const isNetwork =
+      err.message?.includes("fetch failed") ||
+      err.message?.includes("ECONNREFUSED") ||
+      err.message?.includes("Failed to communicate");
     return {
       success: false,
-      error: isNetworkError
-        ? "Backend server is offline. Please ensure Express server is running on port 5000."
+      error: isNetwork
+        ? "Network error. Please try again later."
         : err.message || "Network error. Please try again later.",
     };
   }
@@ -54,7 +57,7 @@ export async function cancelBookingAction(bookingId: string) {
       method: "PATCH",
     });
 
-    const data = await res.json();
+    const data = await res.json().catch(() => ({}));
 
     if (!res.ok) {
       return {
@@ -73,9 +76,15 @@ export async function cancelBookingAction(bookingId: string) {
     };
   } catch (error: unknown) {
     const err = error as Error;
+    const isNetwork =
+      err.message?.includes("fetch failed") ||
+      err.message?.includes("ECONNREFUSED") ||
+      err.message?.includes("Failed to communicate");
     return {
       success: false,
-      error: err.message || "Network error. Please try again later.",
+      error: isNetwork
+        ? "Network error. Please try again later."
+        : err.message || "Network error. Please try again later.",
     };
   }
 }
@@ -100,7 +109,7 @@ export async function updateBookingStatusAction(
       body: JSON.stringify(payload),
     });
 
-    const data = await res.json();
+    const data = await res.json().catch(() => ({}));
 
     if (!res.ok) {
       return {
@@ -121,9 +130,15 @@ export async function updateBookingStatusAction(
     };
   } catch (error: unknown) {
     const err = error as Error;
+    const isNetwork =
+      err.message?.includes("fetch failed") ||
+      err.message?.includes("ECONNREFUSED") ||
+      err.message?.includes("Failed to communicate");
     return {
       success: false,
-      error: err.message || "Network error. Please try again later.",
+      error: isNetwork
+        ? "Network error. Please try again later."
+        : err.message || "Network error. Please try again later.",
     };
   }
 }

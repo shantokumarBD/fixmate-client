@@ -22,7 +22,7 @@ export async function updateProfileAction(input: UpdateProfileInput) {
       body: JSON.stringify(input),
     });
 
-    const data = await res.json();
+    const data = await res.json().catch(() => ({}));
 
     if (!res.ok) {
       return {
@@ -43,9 +43,15 @@ export async function updateProfileAction(input: UpdateProfileInput) {
     };
   } catch (error: unknown) {
     const err = error as Error;
+    const isNetwork =
+      err.message?.includes("fetch failed") ||
+      err.message?.includes("ECONNREFUSED") ||
+      err.message?.includes("Failed to communicate");
     return {
       success: false,
-      error: err.message || "Network error. Please try again later.",
+      error: isNetwork
+        ? "Network error. Please try again later."
+        : err.message || "Network error. Please try again later.",
     };
   }
 }

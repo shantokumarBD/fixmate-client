@@ -25,7 +25,7 @@ export async function createServiceAction(input: CreateServiceInput) {
       body: JSON.stringify(input),
     });
 
-    const data = await res.json();
+    const data = await res.json().catch(() => ({}));
 
     if (!res.ok) {
       return {
@@ -44,9 +44,15 @@ export async function createServiceAction(input: CreateServiceInput) {
     };
   } catch (error: unknown) {
     const err = error as Error;
+    const isNetwork =
+      err.message?.includes("fetch failed") ||
+      err.message?.includes("ECONNREFUSED") ||
+      err.message?.includes("Failed to communicate");
     return {
       success: false,
-      error: err.message || "Network error. Please try again later.",
+      error: isNetwork
+        ? "Network error. Please try again later."
+        : err.message || "Network error. Please try again later.",
     };
   }
 }
@@ -61,7 +67,7 @@ export async function toggleAvailabilityAction(serviceId: string, isAvailable: b
       body: JSON.stringify({ isAvailable }),
     });
 
-    const data = await res.json();
+    const data = await res.json().catch(() => ({}));
 
     if (!res.ok) {
       return {
@@ -80,9 +86,15 @@ export async function toggleAvailabilityAction(serviceId: string, isAvailable: b
     };
   } catch (error: unknown) {
     const err = error as Error;
+    const isNetwork =
+      err.message?.includes("fetch failed") ||
+      err.message?.includes("ECONNREFUSED") ||
+      err.message?.includes("Failed to communicate");
     return {
       success: false,
-      error: err.message || "Network error. Please try again later.",
+      error: isNetwork
+        ? "Network error. Please try again later."
+        : err.message || "Network error. Please try again later.",
     };
   }
 }
@@ -99,7 +111,7 @@ export async function updateServiceAction(
       method: "PATCH",
       body: JSON.stringify(input),
     });
-    const data = await res.json();
+    const data = await res.json().catch(() => ({}));
     if (!res.ok) {
       return {
         success: false,
@@ -114,9 +126,15 @@ export async function updateServiceAction(
     };
   } catch (error: unknown) {
     const err = error as Error;
+    const isNetwork =
+      err.message?.includes("fetch failed") ||
+      err.message?.includes("ECONNREFUSED") ||
+      err.message?.includes("Failed to communicate");
     return {
       success: false,
-      error: err.message || "Network error. Please try again later.",
+      error: isNetwork
+        ? "Network error. Please try again later."
+        : err.message || "Network error. Please try again later.",
     };
   }
 }
@@ -130,7 +148,7 @@ export async function deleteServiceAction(serviceId: string) {
       method: "DELETE",
     });
 
-    const data = await res.json();
+    const data = await res.json().catch(() => ({}));
 
     if (!res.ok) {
       return {
@@ -148,9 +166,15 @@ export async function deleteServiceAction(serviceId: string) {
     };
   } catch (error: unknown) {
     const err = error as Error;
+    const isNetwork =
+      err.message?.includes("fetch failed") ||
+      err.message?.includes("ECONNREFUSED") ||
+      err.message?.includes("Failed to communicate");
     return {
       success: false,
-      error: err.message || "Network error. Please try again later.",
+      error: isNetwork
+        ? "Network error. Please try again later."
+        : err.message || "Network error. Please try again later.",
     };
   }
 }
