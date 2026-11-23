@@ -10,6 +10,8 @@ import { createCheckoutSessionAction } from "@/actions/payment";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { PaymentBadge } from "@/components/shared/PaymentBadge";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
+import { JobTimelineModal } from "@/components/dashboard/JobTimelineModal";
+import { LeaveReviewModal } from "@/components/dashboard/LeaveReviewModal";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { ROUTES } from "@/constants/routes";
 import {
@@ -20,8 +22,11 @@ import {
   Inbox,
   CreditCard,
   Loader2,
-  CheckCircle2,
+  Clock,
+  Star,
+  FileText,
 } from "lucide-react";
+import { generateInvoicePDF } from "@/lib/pdf/generateInvoice";
 
 interface BookingsTableProps {
   bookings: Booking[];
@@ -34,6 +39,8 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
   const [activeTab, setActiveTab] = useState<FilterTab>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [targetBooking, setTargetBooking] = useState<Booking | null>(null);
+  const [timelineBooking, setTimelineBooking] = useState<Booking | null>(null);
+  const [reviewBooking, setReviewBooking] = useState<Booking | null>(null);
   const [isPending, startTransition] = useTransition();
   const [payingId, setPayingId] = useState<string | null>(null);
 
@@ -197,18 +204,18 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
           </div>
         ) : (
           <>
-            {/* Desktop Table View */}
-            <div className="hidden md:block overflow-x-auto">
-              <table className="w-full text-left border-collapse">
+            {/* Desktop / Laptop Table View (lg: and above) */}
+            <div className="hidden lg:block overflow-x-auto">
+              <table className="w-full text-left border-collapse min-w-[880px]">
                 <thead>
-                  <tr className="bg-[#FEF9EF] border-b-2 border-[#151515] font-mono text-xs text-[#151515] uppercase">
-                    <th className="py-3 px-4 font-bold tracking-wider">Ticket & Service</th>
-                    <th className="py-3 px-4 font-bold tracking-wider">Technician</th>
-                    <th className="py-3 px-4 font-bold tracking-wider">Schedule</th>
-                    <th className="py-3 px-4 font-bold tracking-wider">Quote / Escrow</th>
-                    <th className="py-3 px-4 font-bold tracking-wider">Status</th>
-                    <th className="py-3 px-4 font-bold tracking-wider">Payment</th>
-                    <th className="py-3 px-4 font-bold tracking-wider text-right">Actions</th>
+                  <tr className="bg-[#FEF9EF] border-b-2 border-[#151515] font-mono text-xs text-[#151515] uppercase tracking-wider">
+                    <th className="py-3 px-4 font-extrabold w-[28%]">Ticket & Service</th>
+                    <th className="py-3 px-3.5 font-extrabold w-[18%]">Technician</th>
+                    <th className="py-3 px-3.5 font-extrabold w-[16%]">Schedule</th>
+                    <th className="py-3 px-3.5 font-extrabold w-[12%] whitespace-nowrap">Quote / Escrow</th>
+                    <th className="py-3 px-3 font-extrabold w-[10%] text-center">Status</th>
+                    <th className="py-3 px-3 font-extrabold w-[10%] text-center">Payment</th>
+                    <th className="py-3 px-4 font-extrabold w-[16%] text-right whitespace-nowrap">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y-2 divide-[#151515] font-sans text-xs sm:text-sm">
@@ -280,45 +287,103 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
 
                         {/* Action Column (The ONLY place where interactive buttons live) */}
                         <td className="py-3.5 px-4 whitespace-nowrap text-right">
-                          {isCompletedUnpaid ? (
+                          <div className="flex items-center justify-end gap-2">
+                            {/* Job Timeline Tracker Action Button */}
                             <button
                               type="button"
-                              onClick={() => handlePayNow(b._id)}
-                              disabled={isProcessingPayment}
-                              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#10B981] hover:bg-[#059669] text-white font-mono font-bold text-xs uppercase tracking-wider border-2 border-[#151515] shadow-[2px_2px_0px_#151515] rounded-[6px] hover:translate-x-0.5 hover:translate-y-0.5 active:translate-x-0 active:translate-y-0 active:shadow-none transition-all cursor-pointer disabled:opacity-50"
+                              onClick={() => setTimelineBooking(b)}
+                              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-[#FEF9EF] hover:bg-[#FCD03D] text-[#151515] font-mono font-bold text-xs uppercase tracking-wider border-2 border-[#151515] shadow-[2px_2px_0px_#151515] rounded-[6px] hover:translate-x-0.5 hover:translate-y-0.5 active:translate-x-0 active:translate-y-0 active:shadow-none transition-all cursor-pointer"
+                              title="View Live Job Timeline Tracker"
                             >
-                              {isProcessingPayment ? (
-                                <>
-                                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                                  <span>Routing...</span>
-                                </>
-                              ) : (
-                                <>
-                                  <CreditCard className="w-3.5 h-3.5" />
-                                  <span>Pay Now</span>
-                                </>
-                              )}
+                              <Clock className="w-3.5 h-3.5 text-[#FF5B2E]" />
+                              <span>Timeline</span>
                             </button>
-                          ) : isPaid ? (
-                            <span className="inline-flex items-center gap-1 font-mono text-xs font-bold text-[#16A34A] select-none">
-                              <CheckCircle2 className="w-3.5 h-3.5" />
-                              <span>Settled</span>
-                            </span>
-                          ) : isRequested ? (
-                            <button
-                              type="button"
-                              onClick={() => setTargetBooking(b)}
-                              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-[#DC2626] text-[#DC2626] hover:text-white font-mono font-bold text-xs uppercase tracking-wider border-2 border-[#DC2626] shadow-[2px_2px_0px_#151515] rounded-[6px] hover:translate-x-0.5 hover:translate-y-0.5 active:translate-x-0 active:translate-y-0 active:shadow-none transition-all cursor-pointer"
-                            >
-                              <Ban className="w-3.5 h-3.5" />
-                              <span>Cancel Request</span>
-                            </button>
-                          ) : (
-                            <span className="inline-flex items-center gap-1 font-mono text-[11px] text-[#5B403A] bg-[#F2EDE3] border border-[#151515]/30 px-2 py-1 rounded-[4px] select-none">
-                              <Lock className="w-3 h-3 text-[#5B403A]" />
-                              <span>Locked in bay</span>
-                            </span>
-                          )}
+
+                            {isCompletedUnpaid ? (
+                              <button
+                                type="button"
+                                onClick={() => handlePayNow(b._id)}
+                                disabled={isProcessingPayment}
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#10B981] hover:bg-[#059669] text-white font-mono font-bold text-xs uppercase tracking-wider border-2 border-[#151515] shadow-[2px_2px_0px_#151515] rounded-[6px] hover:translate-x-0.5 hover:translate-y-0.5 active:translate-x-0 active:translate-y-0 active:shadow-none transition-all cursor-pointer disabled:opacity-50"
+                              >
+                                {isProcessingPayment ? (
+                                  <>
+                                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                    <span>Routing...</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <CreditCard className="w-3.5 h-3.5" />
+                                    <span>Pay Now</span>
+                                  </>
+                                )}
+                              </button>
+                            ) : isPaid ? (
+                              <div className="flex items-center gap-1.5">
+                                {/* 1-Click PDF Invoice Download Button */}
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const ok = generateInvoicePDF({
+                                      bookingId: b._id,
+                                      serviceTitle: b.serviceTitle,
+                                      category: b.category,
+                                      customerName: b.customerName,
+                                      customerEmail: b.customerEmail,
+                                      customerPhone: b.customerPhone,
+                                      address: b.address,
+                                      technicianName: b.technicianName,
+                                      technicianEmail: b.technicianEmail,
+                                      preferredDate: b.preferredDate,
+                                      timeSlot: b.timeSlot,
+                                      problemDescription: b.problemDescription,
+                                      basePrice: b.basePrice,
+                                      finalAmount: b.finalAmount || b.basePrice || 0,
+                                      paidAt: b.paidAt,
+                                      transactionId: b.transactionId,
+                                    });
+                                    if (ok) toast.success("Invoice downloaded successfully!");
+                                  }}
+                                  className="inline-flex items-center gap-1 px-2 py-1.5 bg-[#FEF9EF] hover:bg-[#FCD03D] text-[#151515] font-mono font-bold text-xs uppercase tracking-wider border-2 border-[#151515] shadow-[2px_2px_0px_#151515] rounded-[6px] hover:translate-x-0.5 hover:translate-y-0.5 active:translate-x-0 active:translate-y-0 active:shadow-none transition-all cursor-pointer"
+                                  title="Download Official FixMate PDF Invoice"
+                                >
+                                  <FileText className="w-3.5 h-3.5 text-[#FF5B2E]" />
+                                  <span>Invoice</span>
+                                </button>
+
+                                {b.isReviewed ? (
+                                  <span className="inline-flex items-center gap-1 font-mono text-xs font-bold text-[#151515] bg-[#FEF9EF] border-2 border-[#151515] shadow-[2px_2px_0px_#151515] px-2.5 py-1 rounded-[6px]">
+                                    <Star className="w-3.5 h-3.5 fill-[#FCD03D] text-[#151515]" />
+                                    <span>{b.review?.rating || 5}★</span>
+                                  </span>
+                                ) : (
+                                  <button
+                                    type="button"
+                                    onClick={() => setReviewBooking(b)}
+                                    className="inline-flex items-center gap-1 px-2 py-1.5 bg-[#FCD03D] hover:bg-[#FFE072] text-[#151515] font-mono font-bold text-xs uppercase tracking-wider border-2 border-[#151515] shadow-[2px_2px_0px_#151515] rounded-[6px] hover:translate-x-0.5 hover:translate-y-0.5 active:translate-x-0 active:translate-y-0 active:shadow-none transition-all cursor-pointer"
+                                    title="Rate & Review Completed Service"
+                                  >
+                                    <Star className="w-3.5 h-3.5 fill-[#151515] text-[#151515]" />
+                                    <span>Review</span>
+                                  </button>
+                                )}
+                              </div>
+                            ) : isRequested ? (
+                              <button
+                                type="button"
+                                onClick={() => setTargetBooking(b)}
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-[#DC2626] text-[#DC2626] hover:text-white font-mono font-bold text-xs uppercase tracking-wider border-2 border-[#DC2626] shadow-[2px_2px_0px_#151515] rounded-[6px] hover:translate-x-0.5 hover:translate-y-0.5 active:translate-x-0 active:translate-y-0 active:shadow-none transition-all cursor-pointer"
+                              >
+                                <Ban className="w-3.5 h-3.5" />
+                                <span>Cancel</span>
+                              </button>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 font-mono text-[11px] text-[#5B403A] bg-[#F2EDE3] border border-[#151515]/30 px-2 py-1 rounded-[4px] select-none">
+                                <Lock className="w-3 h-3 text-[#5B403A]" />
+                                <span>In Bay</span>
+                              </span>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     );
@@ -327,8 +392,8 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
               </table>
             </div>
 
-            {/* Mobile Cards View */}
-            <div className="block md:hidden divide-y-2 divide-[#151515]">
+            {/* Mobile & Tablet Card Manifest View (< lg:) */}
+            <div className="block lg:hidden divide-y-2 divide-[#151515]">
               {filteredBookings.map((b) => {
                 const ticketCode = `#FX-${b._id?.slice(-4).toUpperCase()}`;
                 const isRequested = b.status?.toLowerCase() === "requested";
@@ -339,51 +404,83 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
                 const isProcessingPayment = payingId === b._id;
 
                 return (
-                  <div key={b._id} className="p-4 space-y-3">
-                    <div className="flex items-start justify-between gap-2">
-                      <div>
-                        <span className="font-mono text-[11px] text-[#FF5B2E] font-bold">
+                  <div key={b._id} className="p-4 sm:p-5 space-y-3.5 hover:bg-[#FEF9EF]/30 transition-colors">
+                    {/* Top Row: Ticket Code, Category & Status Badges */}
+                    <div className="flex items-start justify-between gap-2 flex-wrap">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-xs text-[#FF5B2E] font-bold bg-[#FEF9EF] border border-[#151515] px-2 py-0.5 rounded shadow-[1px_1px_0px_#151515]">
                           {ticketCode}
                         </span>
-                        <h4 className="font-heading font-bold text-sm text-[#151515] leading-snug">
-                          {b.serviceTitle}
-                        </h4>
+                        {b.category && (
+                          <span className="font-mono text-[10px] uppercase font-bold text-[#5B403A] bg-[#F2EDE3] border border-[#151515] px-1.5 py-0.5 rounded">
+                            {b.category}
+                          </span>
+                        )}
                       </div>
-                      <StatusBadge status={b.status} />
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-2 text-xs font-mono bg-[#FEF9EF] p-2.5 border-2 border-[#151515] rounded-[6px]">
-                      <div>
-                        <span className="text-[#5B403A] block text-[10px]">SCHEDULE:</span>
-                        <span className="font-bold text-[#151515]">
-                          {formatDate(b.preferredDate)}
-                        </span>
-                      </div>
-                      <div>
-                        <span className="text-[#5B403A] block text-[10px]">AMOUNT:</span>
-                        <span className="font-bold text-[#151515]">
-                          {formatCurrency(b.finalAmount || b.basePrice || 0)}
-                        </span>
-                      </div>
-                      <div>
-                        <span className="text-[#5B403A] block text-[10px]">TECHNICIAN:</span>
-                        <span className="font-bold text-[#151515] truncate block">
-                          {b.technicianName || "Specialist"}
-                        </span>
-                      </div>
-                      <div>
-                        <span className="text-[#5B403A] block text-[10px]">PAYMENT:</span>
+                      <div className="flex items-center gap-1.5">
+                        <StatusBadge status={b.status} />
                         <PaymentBadge status={b.paymentStatus} />
                       </div>
                     </div>
 
-                    <div className="flex items-center justify-end pt-1">
+                    {/* Service Title */}
+                    <h4 className="font-heading font-extrabold text-sm sm:text-base text-[#151515] leading-snug">
+                      {b.serviceTitle}
+                    </h4>
+
+                    {/* 2x2 Details Manifest Grid */}
+                    <div className="grid grid-cols-2 gap-2.5 text-xs font-mono bg-[#FEF9EF] p-3 border-2 border-[#151515] rounded-[8px] shadow-[2px_2px_0px_#151515]">
+                      <div>
+                        <span className="text-[#5B403A] block text-[10px] font-bold uppercase">SCHEDULE</span>
+                        <span className="font-bold text-[#151515] block mt-0.5">
+                          {formatDate(b.preferredDate)}
+                        </span>
+                        {b.timeSlot && (
+                          <span className="text-[10px] text-[#5B403A] block">
+                            {b.timeSlot}
+                          </span>
+                        )}
+                      </div>
+
+                      <div>
+                        <span className="text-[#5B403A] block text-[10px] font-bold uppercase">QUOTE / ESCROW</span>
+                        <span className="font-extrabold text-[#151515] text-sm block mt-0.5">
+                          {formatCurrency(b.finalAmount || b.basePrice || 0)}
+                        </span>
+                      </div>
+
+                      <div className="col-span-2 pt-1.5 border-t border-[#151515]/15 flex items-center justify-between flex-wrap gap-1">
+                        <div>
+                          <span className="text-[#5B403A] block text-[10px] font-bold uppercase">TECHNICIAN</span>
+                          <span className="font-bold text-[#151515] text-xs">
+                            {b.technicianName || "Assigned Specialist"}
+                          </span>
+                        </div>
+                        <span className="text-[10px] text-[#5B403A] font-mono">
+                          {b.technicianEmail}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Actions Grid: Two Balanced Side-by-Side Buttons */}
+                    <div className="grid grid-cols-2 gap-2 pt-1">
+                      {/* Timeline Button */}
+                      <button
+                        type="button"
+                        onClick={() => setTimelineBooking(b)}
+                        className="inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-[#FEF9EF] hover:bg-[#FCD03D] text-[#151515] font-mono font-bold text-xs uppercase tracking-wider border-2 border-[#151515] shadow-[2px_2px_0px_#151515] rounded-[6px] hover:translate-x-0.5 hover:translate-y-0.5 active:translate-x-0 active:translate-y-0 active:shadow-none transition-all cursor-pointer"
+                      >
+                        <Clock className="w-3.5 h-3.5 text-[#FF5B2E]" />
+                        <span>Timeline</span>
+                      </button>
+
+                      {/* Primary Action Button */}
                       {isCompletedUnpaid ? (
                         <button
                           type="button"
                           onClick={() => handlePayNow(b._id)}
                           disabled={isProcessingPayment}
-                          className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-[#10B981] hover:bg-[#059669] text-white font-mono font-bold text-xs uppercase tracking-wider border-2 border-[#151515] shadow-[2px_2px_0px_#151515] rounded-[6px] cursor-pointer"
+                          className="inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-[#10B981] hover:bg-[#059669] text-white font-mono font-bold text-xs uppercase tracking-wider border-2 border-[#151515] shadow-[2px_2px_0px_#151515] rounded-[6px] hover:translate-x-0.5 hover:translate-y-0.5 active:translate-x-0 active:translate-y-0 active:shadow-none transition-all cursor-pointer disabled:opacity-50"
                         >
                           {isProcessingPayment ? (
                             <>
@@ -393,29 +490,71 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
                           ) : (
                             <>
                               <CreditCard className="w-3.5 h-3.5" />
-                              <span>Pay Now ({formatCurrency(b.finalAmount || b.basePrice)})</span>
+                              <span>Pay Now</span>
                             </>
                           )}
                         </button>
                       ) : isPaid ? (
-                        <span className="font-mono text-xs font-bold text-[#16A34A] flex items-center gap-1 select-none">
-                          <CheckCircle2 className="w-3.5 h-3.5" />
-                          <span>Escrow Settled</span>
-                        </span>
+                        <div className="flex items-center gap-2 w-full">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const ok = generateInvoicePDF({
+                                bookingId: b._id,
+                                serviceTitle: b.serviceTitle,
+                                category: b.category,
+                                customerName: b.customerName,
+                                customerEmail: b.customerEmail,
+                                customerPhone: b.customerPhone,
+                                address: b.address,
+                                technicianName: b.technicianName,
+                                technicianEmail: b.technicianEmail,
+                                preferredDate: b.preferredDate,
+                                timeSlot: b.timeSlot,
+                                problemDescription: b.problemDescription,
+                                basePrice: b.basePrice,
+                                finalAmount: b.finalAmount || b.basePrice || 0,
+                                paidAt: b.paidAt,
+                                transactionId: b.transactionId,
+                              });
+                              if (ok) toast.success("Invoice downloaded!");
+                            }}
+                            className="inline-flex items-center justify-center gap-1.5 flex-1 py-2 bg-[#FEF9EF] hover:bg-[#FCD03D] text-[#151515] font-mono font-bold text-xs uppercase tracking-wider border-2 border-[#151515] shadow-[2px_2px_0px_#151515] rounded-[6px] transition-all cursor-pointer"
+                          >
+                            <FileText className="w-3.5 h-3.5 text-[#FF5B2E]" />
+                            <span>Invoice</span>
+                          </button>
+
+                          {b.isReviewed ? (
+                            <div className="inline-flex items-center justify-center gap-1 flex-1 py-2 bg-[#FEF9EF] text-[#151515] border-2 border-[#151515] shadow-[2px_2px_0px_#151515] rounded-[6px] font-mono text-xs font-bold select-none">
+                              <Star className="w-3.5 h-3.5 fill-[#FCD03D] text-[#151515]" />
+                              <span>{b.review?.rating || 5}★</span>
+                            </div>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => setReviewBooking(b)}
+                              className="inline-flex items-center justify-center gap-1 flex-1 py-2 bg-[#FCD03D] hover:bg-[#FFE072] text-[#151515] font-mono font-bold text-xs uppercase tracking-wider border-2 border-[#151515] shadow-[2px_2px_0px_#151515] rounded-[6px] transition-all cursor-pointer"
+                            >
+                              <Star className="w-3.5 h-3.5 fill-[#151515] text-[#151515]" />
+                              <span>Review</span>
+                            </button>
+                          )}
+                        </div>
                       ) : isRequested ? (
                         <button
                           type="button"
                           onClick={() => setTargetBooking(b)}
-                          className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-white hover:bg-[#DC2626] text-[#DC2626] hover:text-white font-mono font-bold text-xs uppercase tracking-wider border-2 border-[#DC2626] shadow-[2px_2px_0px_#151515] rounded-[6px] cursor-pointer transition-colors"
+                          className="inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-white hover:bg-[#DC2626] text-[#DC2626] hover:text-white font-mono font-bold text-xs uppercase tracking-wider border-2 border-[#DC2626] shadow-[2px_2px_0px_#151515] rounded-[6px] hover:translate-x-0.5 hover:translate-y-0.5 active:translate-x-0 active:translate-y-0 active:shadow-none transition-all cursor-pointer"
                         >
                           <Ban className="w-3.5 h-3.5" />
-                          <span>Cancel Request</span>
+                          <span>Cancel</span>
                         </button>
                       ) : (
-                        <span className="font-mono text-xs text-[#5B403A] flex items-center gap-1 select-none">
-                          <Lock className="w-3 h-3" />
-                          <span>Order locked in bay</span>
-                        </span>
+                        <div className="inline-flex items-center justify-center gap-1 px-3 py-2 bg-[#F2EDE3] text-[#5B403A] border-2 border-[#151515]/30 rounded-[6px] font-mono text-xs select-none">
+                          <Lock className="w-3 h-3 text-[#5B403A]" />
+                          <span>In Bay</span>
+                        </div>
                       )}
                     </div>
                   </div>
@@ -438,6 +577,22 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
         cancelText="Keep Booking"
         variant="danger"
         isLoading={isPending}
+      />
+
+      {/* Live Job Timeline Tracker Modal */}
+      <JobTimelineModal
+        booking={timelineBooking}
+        onClose={() => setTimelineBooking(null)}
+      />
+
+      {/* Verified Rating & Review Modal */}
+      <LeaveReviewModal
+        booking={reviewBooking}
+        onClose={() => setReviewBooking(null)}
+        onSuccess={() => {
+          setReviewBooking(null);
+          router.refresh();
+        }}
       />
     </div>
   );
