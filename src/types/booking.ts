@@ -1,5 +1,11 @@
 import { BookingStatus, PaymentStatus, ServiceCategory } from "@/constants/roles";
 
+export interface StatusHistoryEntry {
+  status: BookingStatus;
+  changedAt: string;
+  note?: string;
+}
+
 export interface Booking {
   _id: string;
   serviceId: string;
@@ -20,6 +26,15 @@ export interface Booking {
   finalAmount: number;
   paymentStatus: PaymentStatus;
   createdAt: string;
+  paidAt?: string;
+  transactionId?: string;
+  statusHistory?: StatusHistoryEntry[];
+  isReviewed?: boolean;
+  review?: {
+    rating: number;
+    comment: string;
+    reviewedAt: string;
+  };
 }
 
 export interface CreateBookingInput {

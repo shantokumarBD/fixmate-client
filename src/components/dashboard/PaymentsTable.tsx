@@ -16,7 +16,9 @@ import {
   CheckCircle2,
   Copy,
   Check,
+  FileText,
 } from "lucide-react";
+import { generateInvoicePDF } from "@/lib/pdf/generateInvoice";
 
 interface PaymentsTableProps {
   payments: Payment[];
@@ -168,8 +170,11 @@ export function PaymentsTable({ payments }: PaymentsTableProps) {
                     <th className="py-3 px-4 font-bold tracking-wider">
                       Amount Paid
                     </th>
-                    <th className="py-3 px-4 font-bold tracking-wider text-right">
+                    <th className="py-3 px-4 font-bold tracking-wider text-center">
                       Status
+                    </th>
+                    <th className="py-3 px-4 font-bold tracking-wider text-right">
+                      Invoice
                     </th>
                   </tr>
                 </thead>
@@ -238,8 +243,34 @@ export function PaymentsTable({ payments }: PaymentsTableProps) {
                         </td>
 
                         {/* Payment Badge */}
-                        <td className="py-3.5 px-4 whitespace-nowrap text-right">
+                        <td className="py-3.5 px-4 whitespace-nowrap text-center">
                           <PaymentBadge status="paid" />
+                        </td>
+
+                        {/* 1-Click PDF Invoice Download */}
+                        <td className="py-3.5 px-4 whitespace-nowrap text-right">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const ok = generateInvoicePDF({
+                                bookingId: p.bookingId,
+                                serviceTitle: p.serviceTitle,
+                                customerName: p.customerName || "Customer",
+                                customerEmail: p.customerEmail || "",
+                                technicianName: p.technicianName || "Specialist",
+                                technicianEmail: p.technicianEmail || "",
+                                finalAmount: p.amount || 0,
+                                paidAt: p.paidAt,
+                                transactionId: p.transactionId,
+                              });
+                              if (ok) toast.success("Invoice downloaded successfully!");
+                            }}
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-[#FEF9EF] hover:bg-[#FCD03D] text-[#151515] font-mono font-bold text-xs uppercase tracking-wider border-2 border-[#151515] shadow-[2px_2px_0px_#151515] rounded-[6px] hover:translate-x-0.5 hover:translate-y-0.5 active:translate-x-0 active:translate-y-0 active:shadow-none transition-all cursor-pointer"
+                            title="Download Official FixMate PDF Invoice"
+                          >
+                            <FileText className="w-3.5 h-3.5 text-[#FF5B2E]" />
+                            <span>PDF</span>
+                          </button>
                         </td>
                       </tr>
                     );
@@ -301,6 +332,29 @@ export function PaymentsTable({ payments }: PaymentsTableProps) {
                       </span>
                     </div>
                   </div>
+
+                  {/* Mobile 1-Click Invoice Action Button */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const ok = generateInvoicePDF({
+                        bookingId: p.bookingId,
+                        serviceTitle: p.serviceTitle,
+                        customerName: p.customerName || "Customer",
+                        customerEmail: p.customerEmail || "",
+                        technicianName: p.technicianName || "Specialist",
+                        technicianEmail: p.technicianEmail || "",
+                        finalAmount: p.amount || 0,
+                        paidAt: p.paidAt,
+                        transactionId: p.transactionId,
+                      });
+                      if (ok) toast.success("Invoice downloaded successfully!");
+                    }}
+                    className="w-full inline-flex items-center justify-center gap-1.5 py-2 bg-[#FEF9EF] hover:bg-[#FCD03D] text-[#151515] font-mono font-bold text-xs uppercase tracking-wider border-2 border-[#151515] shadow-[2px_2px_0px_#151515] rounded-[6px] transition-all cursor-pointer"
+                  >
+                    <FileText className="w-3.5 h-3.5 text-[#FF5B2E]" />
+                    <span>Download PDF Invoice</span>
+                  </button>
                 </div>
               ))}
             </div>

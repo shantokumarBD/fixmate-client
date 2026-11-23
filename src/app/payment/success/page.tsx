@@ -8,6 +8,7 @@ import {
   CalendarCheck,
   ShieldCheck,
 } from "lucide-react";
+import { DownloadInvoiceButton } from "@/components/payment/DownloadInvoiceButton";
 import { verifyPaymentSession } from "@/lib/api/payments";
 import { requireRole } from "@/lib/auth/session";
 import { formatCurrency, formatDate } from "@/lib/utils";
@@ -121,6 +122,24 @@ export default async function PaymentSuccessPage({ searchParams }: PaymentSucces
             <span>
               Your invoice is digitally stored and covered under FixMate 30-day workmanship guarantee.
             </span>
+          </div>
+
+          {/* 1-Click PDF Invoice Download CTA */}
+          <div className="pt-2">
+            <DownloadInvoiceButton
+              className="w-full"
+              invoiceData={{
+                bookingId: payment.bookingId,
+                serviceTitle: payment.serviceTitle,
+                customerName: payment.customerName || "Customer",
+                customerEmail: payment.customerEmail || "",
+                technicianName: payment.technicianName || "Specialist",
+                technicianEmail: payment.technicianEmail || "",
+                finalAmount: payment.amount || 0,
+                paidAt: payment.paidAt,
+                transactionId: payment.transactionId,
+              }}
+            />
           </div>
 
           {/* Action CTAs */}
