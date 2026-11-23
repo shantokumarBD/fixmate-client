@@ -125,8 +125,12 @@ export function TechnicianRequestsTable({ bookings }: TechnicianRequestsTablePro
       toast.error("Please enter a valid final repair settlement amount ($ > 0)");
       return;
     }
+    if (numericAmount > 999999.99) {
+      toast.error("Final settlement amount cannot exceed $999,999.99");
+      return;
+    }
 
-    handleTransition(targetCompleteBooking._id, "completed", numericAmount);
+    handleTransition(targetCompleteBooking._id, "completed", Math.round(numericAmount * 100) / 100);
   };
 
   return (
@@ -419,8 +423,9 @@ export function TechnicianRequestsTable({ bookings }: TechnicianRequestsTablePro
                   <DollarSign className="w-4 h-4 text-[#5B403A] absolute left-3 top-1/2 -translate-y-1/2" />
                   <input
                     type="number"
-                    min="1"
-                    step="any"
+                    min="0.01"
+                    max="999999.99"
+                    step="0.01"
                     required
                     value={finalAmountInput}
                     // Auto-select on focus so typing replaces the number without backspacing

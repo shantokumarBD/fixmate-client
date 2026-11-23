@@ -21,7 +21,8 @@ export async function FeaturedServices() {
               Featured Workshop Services
             </h2>
             <p className="font-sans text-sm sm:text-base text-[#151515]/80 mt-2 font-medium max-w-xl">
-              Choose from standard repair manifests handled by vetted workshop masters.
+              Choose from standard repair manifests handled by vetted workshop
+              masters.
             </p>
           </div>
 
@@ -34,7 +35,7 @@ export async function FeaturedServices() {
           </Link>
         </div>
 
-        {/* 6-Ticket Grid (3x2) or Empty State */}
+        {/* 6-Ticket Grid (3x2) or Resilient Fallback State */}
         {services.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {services.map((service) => (
@@ -47,10 +48,12 @@ export async function FeaturedServices() {
               <Wrench className="w-7 h-7 text-[#151515]" />
             </div>
             <h3 className="font-heading font-bold text-xl text-[#151515]">
-              No Services Currently Available
+              Catalog Temporarily Standby
             </h3>
             <p className="font-sans text-sm text-[#151515]/70 mt-1.5 max-w-md">
-              Our verified technicians are actively updating their repair manifests. Check back shortly.
+              Workshop services are currently synchronizing with the central
+              dispatch hub. Please reload in a moment if services do not
+              display.
             </p>
           </div>
         )}
