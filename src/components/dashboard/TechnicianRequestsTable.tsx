@@ -8,6 +8,7 @@ import { updateBookingStatusAction } from "@/actions/booking";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { PaymentBadge } from "@/components/shared/PaymentBadge";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
+import { JobTimelineTracker } from "@/components/dashboard/JobTimelineTracker";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import {
   Search,
@@ -41,6 +42,7 @@ export function TechnicianRequestsTable({ bookings }: TechnicianRequestsTablePro
   const [targetRejectBooking, setTargetRejectBooking] = useState<Booking | null>(null);
   const [targetCompleteBooking, setTargetCompleteBooking] = useState<Booking | null>(null);
   const [finalAmountInput, setFinalAmountInput] = useState<string | number>("");
+  const [completionNoteInput, setCompletionNoteInput] = useState("");
   const [inspectBooking, setInspectBooking] = useState<Booking | null>(null);
   const [processingId, setProcessingId] = useState<string | null>(null);
 
@@ -98,15 +100,16 @@ export function TechnicianRequestsTable({ bookings }: TechnicianRequestsTablePro
   });
 
   
-  const handleTransition = (bookingId: string, nextStatus: string, amount?: number) => {
+  const handleTransition = (bookingId: string, nextStatus: string, amount?: number, note?: string) => {
     setProcessingId(bookingId);
     startTransition(async () => {
-      const res = await updateBookingStatusAction(bookingId, nextStatus, amount);
+      const res = await updateBookingStatusAction(bookingId, nextStatus, amount, note);
       if (res.success) {
         toast.success(res.message || `Work order updated to ${nextStatus}`);
         setTargetCompleteBooking(null);
         setTargetRejectBooking(null);
         setInspectBooking(null);
+        setCompletionNoteInput("");
         router.refresh();
       } else {
         toast.error(res.error || "Failed to update work order status");
@@ -130,7 +133,12 @@ export function TechnicianRequestsTable({ bookings }: TechnicianRequestsTablePro
       return;
     }
 
-    handleTransition(targetCompleteBooking._id, "completed", Math.round(numericAmount * 100) / 100);
+    handleTransition(
+      targetCompleteBooking._id,
+      "completed",
+      Math.round(numericAmount * 100) / 100,
+      completionNoteInput
+    );
   };
 
   return (
@@ -448,6 +456,19 @@ export function TechnicianRequestsTable({ bookings }: TechnicianRequestsTablePro
                 </span>
               </div>
 
+              <div>
+                <label className="block font-mono text-xs font-bold uppercase tracking-wider text-[#151515] mb-1">
+                  Work Log Note (Optional)
+                </label>
+                <input
+                  type="text"
+                  value={completionNoteInput}
+                  onChange={(e) => setCompletionNoteInput(e.target.value)}
+                  placeholder="e.g. Diagnostic verified, hardware tested"
+                  className="w-full px-3 py-2 bg-white border-2 border-[#151515] rounded-[6px] font-sans text-xs text-[#151515] placeholder:text-[#5B403A]/60 focus:outline-none focus:ring-2 focus:ring-[#FF5B2E]"
+                />
+              </div>
+
               <div className="flex items-center justify-end gap-2 pt-2 border-t-2 border-[#151515]">
                 <button
                   type="button"
@@ -470,10 +491,10 @@ export function TechnicianRequestsTable({ bookings }: TechnicianRequestsTablePro
         </div>
       )}
 
-      {/* ================= MODAL 2: INSPECT PROBLEM DETAILS ================= */}
+      {/* ================= MODAL 2: INSPECT PROBLEM DETAILS & LIVE TIMELINE ================= */}
       {inspectBooking && (
         <div className="fixed inset-0 z-50 bg-[#151515]/70 flex items-center justify-center p-3 sm:p-4 backdrop-blur-xs overflow-y-auto">
-          <div className="bg-white border-2 border-[#151515] rounded-[10px] shadow-[8px_8px_0px_#151515] w-full max-w-lg my-8 overflow-hidden flex flex-col">
+          <div className="bg-white border-2 border-[#151515] rounded-[10px] shadow-[8px_8px_0px_#151515] w-full max-w-2xl my-8 overflow-hidden flex flex-col">
             <div className="p-4 sm:p-5 border-b-2 border-[#151515] bg-[#FEF9EF] flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <span className="bg-[#FCD03D] border-2 border-[#151515] px-2 py-0.5 text-[11px] font-mono font-bold uppercase shadow-[1px_1px_0px_#151515]">
@@ -492,7 +513,7 @@ export function TechnicianRequestsTable({ bookings }: TechnicianRequestsTablePro
               </button>
             </div>
 
-            <div className="p-4 sm:p-6 space-y-4">
+            <div className="p-4 sm:p-6 space-y-4 max-h-[75vh] overflow-y-auto">
               {/* Problem Description */}
               <div>
                 <span className="font-mono text-[11px] uppercase font-bold text-[#5B403A] block mb-1.5">
@@ -538,6 +559,11 @@ export function TechnicianRequestsTable({ bookings }: TechnicianRequestsTablePro
                 <span className="font-black text-[#151515]">
                   Quote: {formatCurrency(inspectBooking.finalAmount || inspectBooking.basePrice || 0)}
                 </span>
+              </div>
+
+              {/* Live Job Timeline Tracker */}
+              <div className="pt-2">
+                <JobTimelineTracker booking={inspectBooking} />
               </div>
             </div>
 

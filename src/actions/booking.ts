@@ -51,10 +51,11 @@ export async function createBookingAction(input: CreateBookingInput) {
 /**
  * Server Action: Cancel a repair booking (Only valid when status is 'requested')
  */
-export async function cancelBookingAction(bookingId: string) {
+export async function cancelBookingAction(bookingId: string, cancellationReason?: string) {
   try {
     const res = await authFetch(API_ENDPOINTS.BOOKINGS.PATCH_CANCEL(bookingId), {
       method: "PATCH",
+      body: cancellationReason ? JSON.stringify({ cancellationReason }) : undefined,
     });
 
     const data = await res.json().catch(() => ({}));
@@ -96,12 +97,16 @@ export async function cancelBookingAction(bookingId: string) {
 export async function updateBookingStatusAction(
   bookingId: string,
   status: string,
-  finalAmount?: number
+  finalAmount?: number,
+  note?: string
 ) {
   try {
-    const payload: { status: string; finalAmount?: number } = { status };
+    const payload: { status: string; finalAmount?: number; note?: string } = { status };
     if (finalAmount !== undefined) {
       payload.finalAmount = finalAmount;
+    }
+    if (note && note.trim() !== "") {
+      payload.note = note.trim();
     }
 
     const res = await authFetch(API_ENDPOINTS.BOOKINGS.PATCH_STATUS(bookingId), {
